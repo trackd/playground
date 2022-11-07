@@ -31,9 +31,9 @@
     )
     begin {
         switch ($Day) {
-            Today { if (-not((Get-Date) -gt (Get-Date 04:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
-            Tomorrow { if (-not((Get-Date) -gt (Get-Date 04:00))) { $date = (Get-Date -Format yyyy-MM-dd) } else { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') } }
-            Default { if (-not((Get-Date) -gt (Get-Date 04:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
+            Today { if (-not((Get-Date) -gt (Get-Date 05:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
+            Tomorrow { if (-not((Get-Date) -gt (Get-Date 05:00))) { $date = (Get-Date -Format yyyy-MM-dd) } else { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') } }
+            Default { if (-not((Get-Date) -gt (Get-Date 05:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
         }
         $offset = '0'
         $limit = '8'
@@ -78,8 +78,7 @@
             $Response | ForEach-Object {
                 $chan = $_.name
                 $_.broadcasts | ForEach-Object {
-                    #TODO: add filter for only showing remaining schedule for the rest of the day
-                    if ($_.isPlay -ne 'true' -And $null -ne $_.type) {
+                    if ($_.isPlay -ne 'true' -And $null -ne $_.type -And $_.endTime -gt [DateTimeOffset]::Now.ToUnixTimeMilliSeconds() ) {
                         $object = [pscustomobject]@{
                             Channel   = $chan
                             Showing   = $_.title
