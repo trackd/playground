@@ -30,13 +30,10 @@
         [Switch] $Full
     )
     begin {
-        $now = Get-Date
         switch ($Day) {
-            Today { if (-not($now -lt (Get-Date 00:01) -and $now -gt (Get-Date 05:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date -Format yyyy-MM-dd) } }
-            Tomorrow { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') }
-            Default {
-                if (-not($now -lt (Get-Date 00:01) -and $now -gt (Get-Date 05:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date -Format yyyy-MM-dd) }
-            }
+            Today { if (-not((Get-Date) -gt (Get-Date 04:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
+            Tomorrow { if (-not((Get-Date) -gt (Get-Date 04:00))) { $date = (Get-Date -Format yyyy-MM-dd) } else { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') } }
+            Default { if (-not((Get-Date) -gt (Get-Date 04:00))) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
         }
         $offset = '0'
         $limit = '8'
