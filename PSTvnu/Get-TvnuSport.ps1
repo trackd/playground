@@ -1,62 +1,66 @@
-function Get-TvSport {
+function Get-TvnuSport {
 	<#
-.SYNOPSIS
-Get Sporting events from tv.nu api
-All parameters are optional for filtering
+	.SYNOPSIS
+	Get Sporting events from tv.nu
+	unofficial use of api... could break
+	All parameters are optional for filtering
 
-.NOTES
-trackd 2022-10-29
-just created this to learn a bit more
+	.NOTES
+	trackd 2022-10-29
+	just created this to learn a bit more
 
 
-.PARAMETER Sport
-Choose which sport you want to see
-acceptable inputs Hockey, Fotboll, Bandy, Handboll, Tennis, Vintersport, Motorsport, Other, all
-if none is selected, all is chosen per default.
+	.PARAMETER Sport
+	Choose which sport you want to see
+	acceptable inputs Hockey, Fotboll, Bandy, Handboll, Tennis, Vintersport, Motorsport, Other, all
+	if none is selected, all is chosen per default.
 
-.PARAMETER Viewall
-if selected will show previous and future sport events for the day
-if not selected it will only current and future sport events the day
+	.PARAMETER Viewall
+	if selected will show previous and future sport events for the day
+	if not selected it will only current and future sport events the day
 
-.PARAMETER Reruns
-parameter to show rerun events
-by default reruns are not shown.
+	.PARAMETER Reruns
+	parameter to show rerun events
+	by default reruns are not shown.
 
-.PARAMETER Day
-acceptable input is today or tomorrow
-default today
+	.PARAMETER Day
+	acceptable input is today or tomorrow
+	default today
 
-.PARAMETER Full
-show all attributes (same as | fl * )
-will use this to test new properties in the future.
-Title = Event Title
-Live = Live event? Not reliable info
-Channel = Which TV Channel is the game on
-Stream = Which Stream is the game on
-Time = Event start
-StreamStart = Stream start (can be array if reruns etc)
-StreamEnd = Stream end (can be array if reruns etc)
-Date = date of event
-Tournament = which league, cup etc.
-Sport = which sport
-HomeTeam = "team1", should be home team for most sports, possible NHL is reverse. not realiable
-AwayTeam = "team2", should be away team for most sports, possible NHL is reverse. not realiable
-Rerun = is this a rerun game
-Description = description of event
+	.PARAMETER Full
+	show all attributes (same as | fl * )
+	will use this to test new properties in the future.
+	Title = Event Title
+	Live = Live event? Not reliable info
+	Channel = Which TV Channel is the game on
+	Stream = Which Stream is the game on
+	Time = Event start
+	StreamStart = Stream start (can be array if reruns etc)
+	StreamEnd = Stream end (can be array if reruns etc)
+	Date = date of event
+	Tournament = which league, cup etc.
+	Sport = which sport
+	HomeTeam = "team1", should be home team for most sports, possible NHL is reverse. not realiable
+	AwayTeam = "team2", should be away team for most sports, possible NHL is reverse. not realiable
+	Rerun = is this a rerun game
+	Description = description of event
 
-.EXAMPLE
-will return all current and future sport events for today
-no reruns, no previous events, "limited default output"
+	.EXAMPLE
+	will return all current and future sport events for today
+	no reruns, no previous events, "limited default output"
 
-Get-TvSport
-.EXAMPLE
-all hockey games for today
+	Get-TvnuSport
+	.EXAMPLE
+	all hockey games for today
 
-Get-TvSport -Sport Hockey
-.Example
-All fotball games for tomorrow including reruns, all available properties
+	Get-TvnuSport -Sport Hockey
+	.Example
+	All fotball games for tomorrow including reruns, all available properties
 
-Get-TvSport -Sport fotboll -Day Tomorrow -Reruns -Full
+	Get-TvnuSport -Sport fotboll -Day Tomorrow -Reruns -Full
+
+	.LINK
+	credit www.tv.nu
 
 #>
 	[CmdletBinding()]
@@ -134,7 +138,7 @@ Get-TvSport -Sport fotboll -Day Tomorrow -Reruns -Full
 			$members = [System.Management.Automation.PSMemberInfo[]]@($default)
 			$games | Add-Member MemberSet PSStandardMembers $members
 		}
-		return $games
+		$games
 	}
 }
 
