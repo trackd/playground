@@ -1,4 +1,4 @@
-function Get-TvnuSport {
+function Get-TvSport {
 	<#
 	.SYNOPSIS
 	Get Sporting events from tv.nu
