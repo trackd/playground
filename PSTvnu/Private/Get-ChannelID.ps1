@@ -5,7 +5,7 @@ function Get-ChannelID {
         [String] $channel,
         [String] $file = "$PSScriptRoot\previous_channels.xml"
     )
-    If (Test-Path -Path $file -NewerThan (Get-Date).AddDays(-7)) {
+    If (Test-Path -Path $file -OlderThan (Get-Date).AddDays(-7)) {
         Write-Debug 'File is newer than 7 days, importing previous hashtable'
         $ChannelLookup = Import-Clixml $file
         Write-Debug "Loaded $($ChannelLookup.keys.count) from file"
