@@ -15,11 +15,6 @@
     .PARAMETER Full
     Show all values, skips defaultdisplay stuff
 
-    .EXAMPLE
-    If you want to filter on channel the easiest way is
-    Get-Tvnu | Where -Property Channel -EQ 'SVT1'
-    Get-Tvnu | Where -FilterScript {$_.Channel -eq 'SVT1'}
-
     .LINK
     credit www.tv.nu
 #>
@@ -38,7 +33,7 @@
         Default { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
     }
     [System.Collections.ArrayList]$tvschedule = @()
-    . $PSScriptRoot\..\Private\Get-ChannelID.ps1
+    #. $PSScriptRoot\..\Private\Get-ChannelID.ps1
     $ChannelLookup = Get-ChannelID
     $useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
     $headers = @{
@@ -60,7 +55,7 @@
         if (!$Channel) {
             $channelselection = $allchannels
         }
-        Write-Debug "Channels: $($selectedchannels)"
+        Write-Debug "Channels: $($Channel) : $($channelselection)"
         $url = "https://web-api.tv.nu/startFeed?date=$($date)&limit=8$($channelselection)&offset=0"
         Write-Debug "URL: $($url)"
         $raw = Invoke-RestMethod -UseBasicParsing -UserAgent $useragent -Headers $headers -Uri $url

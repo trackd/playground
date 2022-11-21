@@ -15,6 +15,6 @@ function Update-ChannelList {
     $allchannels.data | ForEach-Object {
         $OnlineChannels.add($_.Name, "ch-$($_.id)")
     }
-    Write-Debug "Loaded $($OnlineChannels.keys.count) from Restapi"
+    Write-Debug "Updated channels $($OnlineChannels.keys.count) from Restapi"
     return $OnlineChannels
 }
