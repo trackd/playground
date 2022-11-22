@@ -15,3 +15,9 @@ Foreach ($file in @($Public + $Private)) {
 }
 
 Export-ModuleMember -Function * -Alias *
+
+#Register autocomplete
+Set-ChannelAutoCompleter
+
+#update channellist
+Get-ChannelID

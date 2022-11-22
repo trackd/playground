@@ -12,7 +12,7 @@ function Get-ChannelID {
     } else {
         #Remove-Item $file -ea 0 | Out-Null
         Write-Debug 'hashtable file too old or missing, generating new file'
-        . $PSScriptRoot\Update-ChannelList.ps1
+        #. $PSScriptRoot\Update-ChannelList.ps1
         $ChannelLookup = Update-ChannelList
         $ChannelLookup | ConvertTo-Json | Set-Content $file -Encoding UTF8BOM
         Write-Debug "Loaded $($ChannelLookup.keys.count) from Update-ChannelList, saving for next run"
