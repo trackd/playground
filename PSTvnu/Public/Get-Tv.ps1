@@ -5,8 +5,24 @@
     unofficial use of api... could break
 
     .EXAMPLE
-    Get-Tvnu
-    works without parameters
+    default listing
+    >Get-Tv
+    show SVT1 list
+    >Get-Tv -Channel SVT1
+    Show SVT Barn
+    >Get-Tv -Channel "SVT Barn"
+    Search for MacGyver on todays tv schedule (with default channels)
+    >Get-Tv -Title Macgyver
+    Search for Witout a Trace (with default channels)
+    >Get-Tv -Title "Without a Trace"
+    Show todays Movies (with default channel selection)
+    >Get-Tv -Movies
+    show movies on Tv6
+    >Get-Tv -Channel TV6 -Movies
+    show Series on todays schedule (with default channel selection)
+    >Get-Tv -Series
+    Show Series on Kanal 5.
+    >Get-Tv -Series -Channel "Kanal 5"
 
     .PARAMETER Day
     -Day Today (default)
@@ -38,6 +54,7 @@
 
     .NOTES
     Default channel selection is the same as going to tv.nu
+    cannot combine -Movies & -Series & -Title.
     .LINK
     credit www.tv.nu
 #>
@@ -121,7 +138,7 @@
             $tvschedule | Add-Member MemberSet PSStandardMembers $members
         }
         if ($Title) {
-            $tvschedule | Where-Object -FilterScript { $_.Title -like "$($Title)" } | Sort-Object -Property StartFull
+            $tvschedule | Where-Object -FilterScript { $_.Title -like "*$($Title)*" } | Sort-Object -Property StartFull
         } elseif ($Movies) {
             $tvschedule | Where-Object -FilterScript { $_.Movie -eq 'true' } | Sort-Object -Property StartFull
         } elseif ($Series) {

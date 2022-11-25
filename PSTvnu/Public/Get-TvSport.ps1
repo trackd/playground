@@ -49,15 +49,15 @@
 	will return all current and future sport events for today
 	no reruns, no previous events, "limited default output"
 
-	Get-TvnuSport
+	Get-TvSport
 	.EXAMPLE
 	all hockey games for today
 
-	Get-TvnuSport -Sport Hockey
+	Get-TvSport -Sport Hockey
 	.Example
 	All fotball games for tomorrow including reruns, all available properties
 
-	Get-TvnuSport -Sport fotboll -Day Tomorrow -Reruns -Full
+	Get-TvSport -Sport fotboll -Day Tomorrow -Reruns -Full
 
 	.LINK
 	credit www.tv.nu
