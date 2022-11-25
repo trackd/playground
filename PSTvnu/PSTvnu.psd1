@@ -12,10 +12,10 @@
     # RootModule = ''
 
     # Version number of this module.
-    ModuleVersion     = '0.2'
+    ModuleVersion     = '0.5'
 
     # Supported PSEditions
-    # CompatiblePSEditions = @()
+    #CompatiblePSEditions = @(7)
 
     # ID used to uniquely identify this module
     GUID              = 'f55d5136-2b6f-49c4-824c-0eba6dd77865'
@@ -30,10 +30,10 @@
     Copyright         = '(c) trackd. All rights reserved.'
 
     # Description of the functionality provided by this module
-    # Description = ''
+    Description       = 'Get the swedish tv schedule, supports filtering and wildcard search'
 
     # Minimum version of the PowerShell engine required by this module
-    # PowerShellVersion = ''
+    PowerShellVersion = '7.0'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''

@@ -1,5 +1,4 @@
 function Update-ChannelList {
-    Write-Debug 'Online version requested from script'
     $OnlineChannels = @{}
     $useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
     $headers = @{
@@ -15,6 +14,5 @@ function Update-ChannelList {
     $allchannels.data | ForEach-Object {
         $OnlineChannels.add($_.Name, "ch-$($_.id)")
     }
-    Write-Debug "Updated channels $($OnlineChannels.keys.count) from Restapi"
     return $OnlineChannels
 }

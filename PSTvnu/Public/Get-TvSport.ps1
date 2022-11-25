@@ -1,4 +1,4 @@
-function Get-TvSport {
+﻿function Get-TvSport {
 	<#
 	.SYNOPSIS
 	Get Sporting events from tv.nu
@@ -65,7 +65,7 @@ function Get-TvSport {
 #>
 	[CmdletBinding()]
 	param(
-		[ValidateSet('Hockey', 'Fotboll', 'Bandy', 'Handboll', 'Tennis', 'Vintersport', 'Motorsport', 'Other', 'all')]
+		[ValidateSet('Ishockey', 'Fotboll', 'Bandy', 'Handboll', 'Tennis', 'Vintersport', 'Motorsport', 'Other', 'all')]
 		[string] $Sport,
 		[Switch] $Viewall,
 		[Switch] $Reruns,
@@ -77,7 +77,7 @@ function Get-TvSport {
 		switch ($Sport) {
 			All { $sportfilter = 'sportGroups[]=1&sportGroups[]=2&sportGroups[]=6&sportGroups[]=7&sportGroups[]=8&sportGroups[]=9&sportGroups[]=10&sportGroups[]=11' }
 			Fotboll { $sportfilter = 'sportGroups[]=1' }
-			Hockey { $sportfilter = 'sportGroups[]=2' }
+			Ishockey { $sportfilter = 'sportGroups[]=2' }
 			Bandy { $sportfilter = 'sportGroups[]=6' }
 			Handboll { $sportfilter = 'sportGroups[]=7' }
 			Tennis { $sportfilter = 'sportGroups[]=8' }
@@ -89,10 +89,11 @@ function Get-TvSport {
 		if ($Viewall) { $Viewall2 = 'true' } else { $Viewall2 = 'false' }
 		if ($Reruns) { $Reruns2 = 'true' } else { $Reruns2 = 'false' }
 		switch ($Day) {
-			Today { $date = (Get-Date -Format yyyy-MM-dd) }
-			Tomorrow { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') }
-			Default { $date = (Get-Date -Format yyyy-MM-dd) }
+			Today { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
+			Tomorrow { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).ToString('yyyy-MM-dd') } else { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') } }
+			Default { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
 		}
+		$games = [System.Collections.Generic.List[psobject]]::new()
 	}
 	process {
 		try {
@@ -107,16 +108,16 @@ function Get-TvSport {
 				'origin'          = 'https://www.tv.nu'
 			}
 			$url = "https://web-api.tv.nu/sport/schedule?modules[]=pp-13&modules[]=pp-12&modules[]=ch-51&modules[]=ch-52&modules[]=pp-14&modules[]=ed-6&modules[]=pp-18&modules[]=ch-60&modules[]=ed-19&modules[]=ch-27&modules[]=pl-3&modules[]=pp-31&modules[]=ch-63&modules[]=ch-65&modules[]=pp-9&modules[]=ch-64&modules[]=ed-15&modules[]=ch-66&modules[]=pp-34&modules[]=ch-67&modules[]=pp-30&modules[]=tl-13&modules[]=ch-68&modules[]=pp-4&modules[]=ch-70&modules[]=pp-16&modules[]=ch-88&modules[]=pc-8&modules[]=ch-132&modules[]=pl-2&modules[]=ch-49&modules[]=ch-53&modules[]=pp-33&modules[]=ch-54&modules[]=pp-36&modules[]=ch-30233&preset=sport&scheduleDate=$date&$($sportfilter)&viewAll=$($viewall2)&withReruns=$($reruns2)"
-			$raw = Invoke-RestMethod -UseBasicParsing -UserAgent $useragent -Headers $headers -Uri $url
-			$games = foreach ($game in $raw.data) {
-				[pscustomobject]@{
+			$raw = Invoke-RestMethod -UserAgent $useragent -Headers $headers -Uri $url
+			foreach ($game in $raw.data) {
+				$object = [pscustomobject]@{
 					Title       = $game.title
 					Live        = $game.isLive
 					Channel     = $game.broadcasts.channel.name -join ','
 					Stream      = $game.playEpisodes.playprovider.name -join ','
-					Time        = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.eventTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
-					StreamStart = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.playEpisodes.streamstart).LocalDateTime.ToString('yyyy-MM-dd HH:mm') -join ','
-					StreamEnd   = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.playEpisodes.streamend).LocalDateTime.ToString('yyyy-MM-dd HH:mm') -join ','
+					Time        = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.eventTime).LocalDateTime.ToString('ddd HH:mm')
+					StreamStart = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.playEpisodes.streamstart).LocalDateTime.ToString('ddd HH:mm') -join ','
+					StreamEnd   = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.playEpisodes.streamend).LocalDateTime.ToString('ddd HH:mm') -join ','
 					Date        = $game.scheduleDate
 					Tournament  = $game.tournament
 					Sport       = $game.Sport
@@ -124,7 +125,9 @@ function Get-TvSport {
 					AwayTeam    = $game.team2.name
 					Rerun       = $game.broadcasts.isRerun -join ','
 					Description = $game.description
+					TimeFull    = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.eventTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
 				}
+				$games.add($object)
 			}
 		} catch {
 			Write-Error "ERROR $($error[0].exception.message)"
@@ -138,7 +141,6 @@ function Get-TvSport {
 			$members = [System.Management.Automation.PSMemberInfo[]]@($default)
 			$games | Add-Member MemberSet PSStandardMembers $members
 		}
-		$games
+		$games | Sort-Object -Property Timefull
 	}
 }
-
