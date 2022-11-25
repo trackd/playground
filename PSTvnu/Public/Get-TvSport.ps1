@@ -137,7 +137,7 @@
 	end {
 		if (!$Full) {
 			$fields = 'Time', 'Title', 'Channel', 'Stream', 'Tournament', 'Sport'
-			$default = New-Object System.Management.Automation.PSPropertySet(‘DefaultDisplayPropertySet’,[string[]]$fields)
+			$default = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet',[string[]]$fields)
 			$members = [System.Management.Automation.PSMemberInfo[]]@($default)
 			$games | Add-Member MemberSet PSStandardMembers $members
 		}

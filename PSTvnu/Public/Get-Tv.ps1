@@ -43,7 +43,7 @@
 #>
     [CmdletBinding()]
     param(
-        [ArgumentCompletions( 'Today', 'Tomorrow' )]
+        [ValidateSet('Today','Tomorrow')]
         [string] $Day,
         [Switch] $Full,
         [string] $Channel,
@@ -116,7 +116,7 @@
     end {
         if (!$Full) {
             $fields = 'Channel', 'Title', 'Start', 'End'
-            $default = New-Object System.Management.Automation.PSPropertySet(‘DefaultDisplayPropertySet’,[string[]]$fields)
+            $default = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet',[string[]]$fields)
             $members = [System.Management.Automation.PSMemberInfo[]]@($default)
             $tvschedule | Add-Member MemberSet PSStandardMembers $members
         }

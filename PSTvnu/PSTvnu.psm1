@@ -1,3 +1,4 @@
+#Requires -Version 5.1
 $Public = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue -Recurse )
 $Private = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue -Recurse)
 
@@ -11,8 +12,7 @@ Foreach ($file in @($Public + $Private)) {
 
 Export-ModuleMember -Function * -Alias *
 
-#Register autocomplete
+#Register autocomplete for Get-Tv -Channel <autocomplete>
 Set-ChannelAutoCompleter
-
 #update channellist
 Get-ChannelID

@@ -9,31 +9,31 @@
 @{
 
     # Script module or binary module file associated with this manifest.
-    # RootModule = ''
+    RootModule           = 'PSTvnu.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.6'
+    ModuleVersion        = '0.6.1'
 
     # Supported PSEditions
-    #CompatiblePSEditions = @(7)
+    CompatiblePSEditions = @('Desktop', 'Core')
 
     # ID used to uniquely identify this module
-    GUID              = 'f55d5136-2b6f-49c4-824c-0eba6dd77865'
+    GUID                 = 'f55d5136-2b6f-49c4-824c-0eba6dd77865'
 
     # Author of this module
-    Author            = 'trackd'
+    Author               = 'trackd'
 
     # Company or vendor of this module
-    CompanyName       = 'Unknown'
+    CompanyName          = 'Unknown'
 
     # Copyright statement for this module
-    Copyright         = '(c) trackd. All rights reserved.'
+    Copyright            = '(c) trackd. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description       = 'Get the swedish tv schedule, supports filtering and wildcard search'
+    Description          = 'Get the swedish tv schedule, supports filtering and wildcard search'
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion = '7.0'
+    PowerShellVersion    = '5.1'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -69,16 +69,16 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @('Get-Tv','Get-TvSport')
+    FunctionsToExport    = @('Get-Tv','Get-TvSport')
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport   = @()
+    #CmdletsToExport   = @()
 
     # Variables to export from this module
-    VariablesToExport = '*'
+    VariablesToExport    = '*'
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport   = @()
+    #AliasesToExport   = @()
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
@@ -90,24 +90,27 @@
     # FileList = @()
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-    PrivateData       = @{
+    PrivateData          = @{
 
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('Tv','Sport','Swedish')
+            Tags         = @('Tv','Sport','Swedish')
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri   = 'https://github.com/trackd/Powershell/blob/master/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/trackd/Powershell'
+            ProjectUri   = 'https://github.com/trackd/Powershell'
 
             # A URL to an icon representing this module.
             # IconUri = ''
 
             # ReleaseNotes of this module
-            # ReleaseNotes = ''
+            ReleaseNotes = '
+            ver 0.6.1 - added support for Powershell 5.1 and fixed psd1 settings.
+            ver 0.6 - initial publish test
+            '
 
             # Prerelease string of this module
             # Prerelease = ''
