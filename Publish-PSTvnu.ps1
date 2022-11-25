@@ -1,3 +1,4 @@
 ﻿#cleanup temp json files.
-Remove-Item .\PSTvnu\Private\*.json
-Publish-Module .\PSTvnu -NuGetApiKey $env:nugetapikey
+$ModulePath = "$PSScriptRoot\PSTvnu"
+Remove-Item $ModulePath\Private\*.json
+Publish-Module -Path $ModulePath -NuGetApiKey $env:nugetapikey
