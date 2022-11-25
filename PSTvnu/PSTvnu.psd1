@@ -12,7 +12,7 @@
     RootModule           = 'PSTvnu.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.6.3'
+    ModuleVersion        = '0.6.4'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -30,7 +30,7 @@
     Copyright            = '(c) trackd. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description          = 'Get the swedish tv schedule, supports filtering and wildcard search'
+    Description          = 'Get the Swedish tv schedule, supports filtering and wildcard search'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion    = '5.1'
@@ -108,9 +108,10 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
-            ver 0.6.2 - fixed minor typos and better examples
-            ver 0.6.1 - added support for Powershell 5.1 and fixed psd1 settings.
-            ver 0.6 - initial publish test
+            ver 0.6.x
+            fixed minor typos and better examples
+            added support for Powershell 5.1 and fixed psd1 settings.
+            initial publish test
             '
 
             # Prerelease string of this module
