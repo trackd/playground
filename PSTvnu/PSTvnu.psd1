@@ -12,7 +12,7 @@
     RootModule           = 'PSTvnu.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.6.2'
+    ModuleVersion        = '0.6.3'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -108,6 +108,7 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
+            ver 0.6.2 - fixed minor typos and better examples
             ver 0.6.1 - added support for Powershell 5.1 and fixed psd1 settings.
             ver 0.6 - initial publish test
             '

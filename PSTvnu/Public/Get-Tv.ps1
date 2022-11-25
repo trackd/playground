@@ -5,24 +5,32 @@
     unofficial use of api... could break
 
     .EXAMPLE
-    default listing
-    >Get-Tv
+    Get-Tv
+    default listing (same as on www.tv.nu)
+
+    .EXAMPLE
+    Get-Tv -Channel SVT1
     show SVT1 list
-    >Get-Tv -Channel SVT1
+    PS C:\> Get-Tv -Channel "SVT Barn"
     Show SVT Barn
-    >Get-Tv -Channel "SVT Barn"
+
+    .EXAMPLE
+    Get-Tv -Title Macgyver
     Search for MacGyver on todays tv schedule (with default channels)
-    >Get-Tv -Title Macgyver
+    PS C:\> Get-Tv -Title "Without a Trace"
     Search for Witout a Trace (with default channels)
-    >Get-Tv -Title "Without a Trace"
+
+    .EXAMPLE
+    Get-Tv -Movies
     Show todays Movies (with default channel selection)
-    >Get-Tv -Movies
+    PS C:\> Get-Tv -Channel TV6 -Movies
     show movies on Tv6
-    >Get-Tv -Channel TV6 -Movies
+
+    .EXAMPLE
+    Get-Tv -Series
     show Series on todays schedule (with default channel selection)
-    >Get-Tv -Series
+    PS C:\> Get-Tv -Series -Channel "Kanal 5"
     Show Series on Kanal 5.
-    >Get-Tv -Series -Channel "Kanal 5"
 
     .PARAMETER Day
     -Day Today (default)
@@ -55,6 +63,7 @@
     .NOTES
     Default channel selection is the same as going to tv.nu
     cannot combine -Movies & -Series & -Title.
+    TODO: add better support for config / dynamic channellist as default. so you could set your own default channels.
     .LINK
     credit www.tv.nu
 #>

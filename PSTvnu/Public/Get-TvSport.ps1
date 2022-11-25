@@ -12,7 +12,7 @@
 
 	.PARAMETER Sport
 	Choose which sport you want to see
-	acceptable inputs Hockey, Fotboll, Bandy, Handboll, Tennis, Vintersport, Motorsport, Other, all
+	acceptable inputs Ishockey, Fotboll, Bandy, Handboll, Tennis, Vintersport, Motorsport, Other, all
 	if none is selected, all is chosen per default.
 
 	.PARAMETER Viewall
@@ -51,9 +51,9 @@
 
 	Get-TvSport
 	.EXAMPLE
-	all hockey games for today
+	all ishockey games for today
 
-	Get-TvSport -Sport Hockey
+	Get-TvSport -Sport Ishockey
 	.Example
 	All fotball games for tomorrow including reruns, all available properties
 
