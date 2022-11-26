@@ -12,7 +12,7 @@
     RootModule           = 'PSTvnu.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.6.5'
+    ModuleVersion        = '0.6.6'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -109,6 +109,7 @@
             # ReleaseNotes of this module
             ReleaseNotes = '
             ver 0.6.x
+            added pagination to Get-Tvsport
             added more filtering options to Get-TvSport
             fixed minor typos and better examples
             added support for Powershell 5.1 and fixed psd1 settings.
