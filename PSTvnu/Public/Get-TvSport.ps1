@@ -27,6 +27,16 @@
 	acceptable input is today or tomorrow
 	default today
 
+	.PARAMETER Tournament
+	search for Tournaments, like: SHL, VM, EM
+	source data appears a bit spotty, so could sometimes not match correctly.
+	use with caution.
+
+	.PARAMETER Team
+	title search for your team
+	Get-Tvsport -Team Malmö
+	Get-Tvsport -Team Sweden
+
 	.PARAMETER Full
 	show all attributes (same as | fl * )
 	will use this to test new properties in the future.
@@ -71,7 +81,9 @@
 		[Switch] $Reruns,
 		[ValidateSet('Today', 'Tomorrow')]
 		[string] $Day,
-		[Switch] $Full
+		[Switch] $Full,
+		[String] $Team,
+		[String] $Tournament
 	)
 	begin {
 		switch ($Sport) {
@@ -125,7 +137,7 @@
 					AwayTeam    = $game.team2.name
 					Rerun       = $game.broadcasts.isRerun -join ','
 					Description = $game.description
-					TimeFull    = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.eventTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
+					StartFull   = [System.DateTimeOffset]::FromUnixTimeMilliseconds($game.eventTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
 				}
 				$games.add($object)
 			}
@@ -141,6 +153,12 @@
 			$members = [System.Management.Automation.PSMemberInfo[]]@($default)
 			$games | Add-Member MemberSet PSStandardMembers $members
 		}
-		$games | Sort-Object -Property Timefull
+		if ($Team) {
+			$games | Where-Object -FilterScript { $_.Title -like "*$($Team)*" } | Sort-Object -Property StartFull
+		} elseif ($Tournament) {
+			$games | Where-Object -FilterScript { $_.Tournament -like "*$($Tournament)*" } | Sort-Object -Property StartFull
+		} else {
+			$games | Sort-Object -Property StartFull
+		}
 	}
 }
