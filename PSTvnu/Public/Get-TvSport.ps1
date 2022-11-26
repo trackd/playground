@@ -106,6 +106,7 @@
 			Default { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
 		}
 		$games = [System.Collections.Generic.List[psobject]]::new()
+		$i = 1
 	}
 	process {
 		try {
@@ -119,9 +120,17 @@
 				'accept-language' = 'en-US,en;q=0.9,sv-SE;q=0.8,sv;q=0.7'
 				'origin'          = 'https://www.tv.nu'
 			}
-			$url = "https://web-api.tv.nu/sport/schedule?modules[]=pp-13&modules[]=pp-12&modules[]=ch-51&modules[]=ch-52&modules[]=pp-14&modules[]=ed-6&modules[]=pp-18&modules[]=ch-60&modules[]=ed-19&modules[]=ch-27&modules[]=pl-3&modules[]=pp-31&modules[]=ch-63&modules[]=ch-65&modules[]=pp-9&modules[]=ch-64&modules[]=ed-15&modules[]=ch-66&modules[]=pp-34&modules[]=ch-67&modules[]=pp-30&modules[]=tl-13&modules[]=ch-68&modules[]=pp-4&modules[]=ch-70&modules[]=pp-16&modules[]=ch-88&modules[]=pc-8&modules[]=ch-132&modules[]=pl-2&modules[]=ch-49&modules[]=ch-53&modules[]=pp-33&modules[]=ch-54&modules[]=pp-36&modules[]=ch-30233&preset=sport&scheduleDate=$date&$($sportfilter)&viewAll=$($viewall2)&withReruns=$($reruns2)"
+			$channels = 'modules[]=pp-13&modules[]=pp-12&modules[]=ch-51&modules[]=ch-52&modules[]=pp-14&modules[]=ed-6&modules[]=pp-18&modules[]=ch-60&modules[]=ed-19&modules[]=ch-27&modules[]=pl-3&modules[]=pp-31&modules[]=ch-63&modules[]=ch-65&modules[]=pp-9&modules[]=ch-64&modules[]=ed-15&modules[]=ch-66&modules[]=pp-34&modules[]=ch-67&modules[]=pp-30&modules[]=tl-13&modules[]=ch-68&modules[]=pp-4&modules[]=ch-70&modules[]=pp-16&modules[]=ch-88&modules[]=pc-8&modules[]=ch-132&modules[]=pl-2&modules[]=ch-49&modules[]=ch-53&modules[]=pp-33&modules[]=ch-54&modules[]=pp-36&modules[]=ch-30233'
+			$url = "https://web-api.tv.nu/sport/schedule?$($channels)&preset=sport&scheduleDate=$($date)&$($sportfilter)&viewAll=$($viewall2)&withReruns=$($reruns2)"
 			$raw = Invoke-RestMethod -UserAgent $useragent -Headers $headers -Uri $url
-			foreach ($game in $raw.data) {
+			$Response += $raw.data
+			while ($false -ne $raw.meta.pagination.hasNext) {
+				$url = "https://web-api.tv.nu/sport/schedule?$($channels)&page=$($i)&preset=sport&scheduleDate=$($date)&$($sportfilter)&viewAll=$($viewall2)&withReruns=$($reruns2)"
+				$raw = Invoke-RestMethod -UserAgent $useragent -Headers $headers -Uri $url
+				$Response += $raw.data
+				$i++
+			}
+			foreach ($game in $Response) {
 				$object = [pscustomobject]@{
 					Title       = $game.title
 					Live        = $game.isLive
