@@ -89,7 +89,7 @@ Function Get-MySecret {
         return $text
     }
     if ($AsSecureString) {
-        $credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Name, $secret
+        $credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $import.Name, $secret
         return $credentials
     }
 }
