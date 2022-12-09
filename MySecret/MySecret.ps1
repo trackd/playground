@@ -9,9 +9,13 @@ depending on locale might need change the encoding
 ([System.Text.Encoding]::Unicode)
 ([system.Text.Encoding]::UTF8)
 ([System.Text.Encoding]::Default)
+.EXAMPLE
+Set-MySecret -Name Secretsauce -Value Sugar -Location Cloud -Notes 'super secret ingredient' -Encryptionkey abcdef1234567890
+Get-MySecret -Name SecretSauce -Location Cloud -Encryptionkey abcdef1234567890
+Get-MySecretList -Location Cloud
 #>
 
-function Set-MySecret {
+Function Set-MySecret {
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -21,6 +25,7 @@ function Set-MySecret {
         [String] $Value,
         [ArgumentCompletions('Cloud','Local','OneDrive')]
         [String] $Location,
+        [String] $Notes,
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({
@@ -43,6 +48,7 @@ function Set-MySecret {
     $EncryptedString = @{
         Name            = $Name
         EncryptedString = $SecureString | ConvertFrom-SecureString –SecureKey $securekey
+        Notes           = $Notes
     }
     $file = "$($path)\$($Name).json"
     $EncryptedString | ConvertTo-Json | Set-Content $file -Encoding UTF8
@@ -73,8 +79,9 @@ Function Get-MySecret {
         OneDrive { $path = "$env:OneDrive\secrets" }
         Default { $path = "$pshpath\profile\secrets" }
     }
-    $securekey = ConvertTo-SecureString -String $Encryptionkey -AsPlainText -Force
     $file = "$($path)\$($name).json"
+    if (-not (Test-Path -Path $file)) { throw "$($Name) secret does not exist in this location, check name and location" }
+    $securekey = ConvertTo-SecureString -String $Encryptionkey -AsPlainText -Force
     $import = Get-Content -Raw -Path $file -Encoding UTF8 | ConvertFrom-Json -AsHashtable
     $secret = ConvertTo-SecureString -String $import.EncryptedString –SecureKey $securekey
     if (!$AsSecureString) {
@@ -85,4 +92,28 @@ Function Get-MySecret {
         $credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Name, $secret
         return $credentials
     }
+}
+Function Get-MySecretList {
+    param(
+        [ArgumentCompletions('Cloud','Local','OneDrive')]
+        [String] $Location
+    )
+    Switch ($Location) {
+        Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/onedrive/googledrive folder
+        Local { $path = "$env:localappdata\secrets" }
+        OneDrive { $path = "$env:OneDrive\secrets" }
+        Default { $path = "$pshpath\profile\secrets" }
+    }
+    if (-not (Test-Path -Path $path)) { throw 'No secrets folder found in this location' }
+    $secrets = Get-ChildItem -Path $path -Filter *.json
+    if (!$secrets) { throw 'No secrets found in this location' }
+    $list = foreach ($item in $secrets) {
+        $load = Get-Content -Raw -Path $item.FullName -Encoding UTF8 | ConvertFrom-Json -AsHashtable
+        [PSCustomObject] @{
+            Created = (Get-Date $item.CreationTime -Format 'yyyy-MM-dd')
+            Name    = $load.Name
+            Notes   = $load.Notes
+        }
+    }
+    return $list
 }
