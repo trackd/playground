@@ -1,7 +1,7 @@
 ﻿#Requires -Version 7.0
 $ErrorActionPreference = 'Stop'
 <#
-testing securestring and encrypted string for storing values more securely
+testing securestring and encrypted string for storing secrets more securely
 trackd 2022-12-07
 note set-mysecret will overwrite any existing secret stored with that name.
 
@@ -11,7 +11,7 @@ depending on locale might need change the encoding
 ([system.Text.Encoding]::UTF8)
 ([System.Text.Encoding]::Default)
 .EXAMPLE
-Set-MySecret -Name Secretsauce -Value Sugar -Location Cloud -Notes 'super secret ingredient' -Encryptionkey abcdef1234567890
+Set-MySecret -Name Secretsauce -Secret Sugar -Location Cloud -Notes 'super secret ingredient' -Encryptionkey abcdef1234567890
 Get-MySecret -Name SecretSauce -Location Cloud -Encryptionkey abcdef1234567890
 Get-MySecretList -Location Cloud
 Remove-MySecret -Name Secretsauce -Location Cloud
@@ -52,7 +52,7 @@ Function Set-MySecret {
     }
     try {
         $securekey = ConvertTo-SecureString -String $Encryptionkey -AsPlainText
-        $SecureString = ConvertTo-SecureString -AsPlainText -String $Value
+        $SecureString = ConvertTo-SecureString -AsPlainText -String $Secret
         $encryptedstring = ConvertFrom-SecureString –SecureKey $securekey -SecureString $SecureString
         $SecretObject = [PSCustomObject] @{
             Name     = $Name
