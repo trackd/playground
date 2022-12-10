@@ -21,6 +21,7 @@ only the actual secret is encrypted.
 #>
 
 Function Set-MySecret {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -71,6 +72,7 @@ Function Set-MySecret {
 }
 
 Function Get-MySecret {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -120,6 +122,7 @@ Function Get-MySecret {
 }
 
 Function Get-MySecretList {
+    [CmdletBinding()]
     param(
         [ArgumentCompletions('Cloud','Local','OneDrive')]
         [String] $Location
@@ -153,6 +156,7 @@ Function Get-MySecretList {
 }
 
 Function Remove-MySecret {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
