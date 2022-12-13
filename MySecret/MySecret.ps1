@@ -24,7 +24,7 @@ only the actual secret is encrypted.
 #>
 
 Function Set-MySecret {
-    [CmdletBinding(DefaultParameterSetName = 'DAPI')]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -55,35 +55,32 @@ Function Set-MySecret {
         OneDrive { if (-not (Test-Path -Path "$env:OneDrive\secrets")) { New-Item -Path "$env:OneDrive\secrets" -ItemType Directory } $path = "$env:OneDrive\secrets" }
         Default { $path = "$pshpath\profile\secrets" }
     }
+    $owner = Join-Path $env:computername $env:username
+    $datetime = Get-Date -Format 'yyyy-MM-dd HH:mm'
     try {
         if ($encryptionkey) {
             #securekey is needed to share credentials or use on different machines.
             $securekey = ConvertTo-SecureString -String $Encryptionkey -AsPlainText
             $SecureString = ConvertTo-SecureString -AsPlainText -String $Secret
             $encryptedstring = ConvertFrom-SecureString –SecureKey $securekey -SecureString $SecureString
-            $SecretObject = [PSCustomObject] @{
-                Name     = $Name
-                Username = $Username
-                Secret   = $encryptedstring
-                Notes    = $Notes
-                Type     = 'EncryptionKey'
-            }
-            $file = Join-Path $path ($name + '.json')
-            $SecretObject | ConvertTo-Json | Set-Content $file -Encoding UTF8
+            $type = 'EncryptionKey'
         } elseif ($DAPI) {
             #Windows Built in encryption scheme without securekey, only usable on the same machin with the same user.
             $SecureString = ConvertTo-SecureString -AsPlainText -String $Secret
             $encryptedstring = ConvertFrom-SecureString -SecureString $SecureString
-            $SecretObject = [PSCustomObject] @{
-                Name     = $Name
-                Username = $Username
-                Secret   = $encryptedstring
-                Notes    = $Notes
-                Type     = 'DAPI'
-            }
-            $file = Join-Path $path ($name + '.json')
-            $SecretObject | ConvertTo-Json | Set-Content $file -Encoding UTF8
+            $type = 'DAPI'
         }
+        $SecretObject = [PSCustomObject] @{
+            Name     = $Name
+            Username = $Username
+            Secret   = $encryptedstring
+            Notes    = $Notes
+            Type     = $type
+            Owner    = $owner
+            Created  = $datetime
+        }
+        $file = Join-Path $path ($name + '.json')
+        $SecretObject | ConvertTo-Json | Set-Content $file -Encoding UTF8
     } catch [System.Security.Cryptography.CryptographicException] {
         Write-Error "$($Name) something went wrong during encryption`n$($PSItem.ToString())"
     } catch [System.Management.Automation.ItemNotFoundException] {
@@ -95,7 +92,7 @@ Function Set-MySecret {
 }
 
 Function Get-MySecret {
-    [CmdletBinding(DefaultParameterSetName = 'DAPI')]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -110,63 +107,53 @@ Function Get-MySecret {
         [Parameter(Mandatory = $true,ParameterSetName = 'DAPI')]
         [Switch] $DAPI
     )
-    Switch ($Location) {
-        Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/onedrive/googledrive folder
-        Local { $path = "$env:localappdata\secrets" }
-        OneDrive { $path = "$env:OneDrive\secrets" }
-        Default { $path = "$pshpath\profile\secrets" }
-    }
-    try {
-        if ($Encryptionkey) {
-            $file = Join-Path $path ($name + '.json')
-            $null = Test-Path -Path $file
-            $securekey = ConvertTo-SecureString -String $Encryptionkey -AsPlainText
-            $import = Get-Content -Raw -Path $file -Encoding UTF8 | ConvertFrom-Json
-            $secretstring = ConvertTo-SecureString -String $import.Secret –SecureKey $securekey
-            $plaintext = ConvertFrom-SecureString -AsPlainText $secretstring
-            if ($PSCredential) {
-                $credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $import.Username, $secretstring
-                return $credentials
-            } elseif ($Print) {
-                $object = [PSCustomObject]@{
-                    Name     = $Import.Name
-                    Username = $Import.Username
-                    Secret   = $plaintext
-                    Notes    = $import.notes
-                    Type     = $Import.Type
-                }
-                return $object
-            } else {
-                return $plaintext
-            }
-        } elseif ($DAPI) {
-            $file = Join-Path $path ($name + '.json')
-            $null = Test-Path -Path $file
-            $import = Get-Content -Raw -Path $file -Encoding UTF8 | ConvertFrom-Json
-            $secretstring = ConvertTo-SecureString -String $import.Secret
-            $plaintext = ConvertFrom-SecureString -AsPlainText $secretstring
-            if ($PSCredential) {
-                $credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $import.Username, $secretstring
-                return $credentials
-            } elseif ($Print) {
-                $object = [PSCustomObject]@{
-                    Name     = $Import.Name
-                    Username = $Import.Username
-                    Secret   = $plaintext
-                    Notes    = $import.notes
-                    Type     = $Import.Type
-                }
-                return $object
-            } else {
-                return $plaintext
-            }
+    begin {
+        Switch ($Location) {
+            Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/onedrive/googledrive folder
+            Local { $path = "$env:localappdata\secrets" }
+            OneDrive { $path = "$env:OneDrive\secrets" }
+            Default { $path = "$pshpath\profile\secrets" }
         }
-    } catch [System.Security.Cryptography.CryptographicException] {
-        Write-Error "Wrong SecureKey for $($Name)"
-    } catch [System.Management.Automation.ItemNotFoundException] {
-        Write-Error "$($name) secret not found`n$($PSItem.ToString())"
-    } catch {
-        Write-Error "ERROR $($error[0].exception.message)"
+        $file = Join-Path $path ($name + '.json')
+        $null = Test-Path -Path $file
+        $import = Get-Content -Raw -Path $file -Encoding UTF8 | ConvertFrom-Json
+    }
+    process {
+        try {
+            if ($Encryptionkey) {
+                $securekey = ConvertTo-SecureString -String $Encryptionkey -AsPlainText
+                $secretstring = ConvertTo-SecureString -String $import.Secret –SecureKey $securekey
+                $plaintext = ConvertFrom-SecureString -AsPlainText $secretstring
+            } elseif ($DAPI) {
+                $secretstring = ConvertTo-SecureString -String $import.Secret
+                $plaintext = ConvertFrom-SecureString -AsPlainText $secretstring
+            }
+        } catch [System.Security.Cryptography.CryptographicException] {
+            Write-Error "Wrong SecureKey for $($Name), encryptionmethod: $($import.Type)"
+        } catch [System.Management.Automation.ItemNotFoundException] {
+            Write-Error "$($name) secret not found`n$($PSItem.ToString())"
+        } catch {
+            Write-Error "ERROR $($error[0].exception.message)"
+        }
+    }
+    end {
+        if ($PSCredential) {
+            $credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $import.Username, $secretstring
+            return $credentials
+        } elseif ($Print) {
+            $object = [PSCustomObject]@{
+                Name     = $Import.Name
+                Username = $Import.Username
+                Secret   = $plaintext
+                Notes    = $import.notes
+                Type     = $Import.Type
+                Owner    = $Import.Owner
+                Created  = $import.created
+            }
+            return $object
+        } else {
+            return $plaintext
+        }
     }
 }
 
@@ -189,11 +176,13 @@ Function Get-MySecretList {
             $list = foreach ($item in $secrets) {
                 $load = Get-Content -Raw -Path $item.FullName -Encoding UTF8 | ConvertFrom-Json
                 [PSCustomObject] @{
-                    Created  = (Get-Date $item.CreationTime -Format 'yyyy-MM-dd')
+                    #Created  = (Get-Date $item.CreationTime -Format 'yyyy-MM-dd')
                     Name     = $load.Name
                     Username = $load.Username
                     Notes    = $load.Notes
                     Type     = $load.Type
+                    Owner    = $load.Owner
+                    Created  = $load.created
                 }
             }
             return $list
