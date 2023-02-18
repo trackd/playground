@@ -32,7 +32,7 @@ Function Set-MySecret {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String] $Secret,
-        [ArgumentCompletions('Cloud','Local','OneDrive')]
+        [ArgumentCompletions('Cloud','Local','OneDrive','appdata')]
         [String] $Location,
         [ValidateNotNullOrEmpty()]
         [Parameter(Mandatory = $true,ParameterSetName = 'EncryptionKey')]
@@ -44,7 +44,11 @@ Function Set-MySecret {
                 }
             })]
         [String] $Encryptionkey,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [String] $Username,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String] $Notes,
         [Parameter(Mandatory = $true,ParameterSetName = 'DAPI')]
         [Switch] $DAPI
@@ -53,6 +57,7 @@ Function Set-MySecret {
         Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/googledrive folder
         Local { if (-not (Test-Path -Path "$env:localappdata\secrets")) { New-Item -Path "$env:localappdata\secrets" -ItemType Directory } $path = "$env:localappdata\secrets" }
         OneDrive { if (-not (Test-Path -Path "$env:OneDrive\secrets")) { New-Item -Path "$env:OneDrive\secrets" -ItemType Directory } $path = "$env:OneDrive\secrets" }
+        appdata { if (-not (Test-Path -Path "$env:appdata\secrets")) { New-Item -Path "$env:appdata\secrets" -ItemType Directory } $path = "$env:appdata\secrets" }
         Default { $path = "$pshpath\profile\secrets" }
     }
     $owner = Join-Path $env:computername $env:username
@@ -79,7 +84,7 @@ Function Set-MySecret {
             Owner    = $owner
             Created  = $datetime
         }
-        $file = Join-Path $path ($name + '.json')
+        $file = Join-Path $path ($name + '.secret.json')
         $SecretObject | ConvertTo-Json | Set-Content $file -Encoding UTF8
     } catch [System.Security.Cryptography.CryptographicException] {
         Write-Error "$($Name) something went wrong during encryption`n$($PSItem.ToString())"
@@ -97,12 +102,14 @@ Function Get-MySecret {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String] $Name,
-        [ArgumentCompletions('Cloud','Local','OneDrive')]
+        [ArgumentCompletions('Cloud','Local','OneDrive','appdata')]
         [String] $Location,
         [ValidateNotNullOrEmpty()]
         [Parameter(Mandatory = $true,ParameterSetName = 'EncryptionKey')]
         [String] $Encryptionkey,
+        [Parameter()]
         [switch] $PSCredential,
+        [Parameter()]
         [Switch] $Print,
         [Parameter(Mandatory = $true,ParameterSetName = 'DAPI')]
         [Switch] $DAPI
@@ -112,9 +119,10 @@ Function Get-MySecret {
             Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/onedrive/googledrive folder
             Local { $path = "$env:localappdata\secrets" }
             OneDrive { $path = "$env:OneDrive\secrets" }
+            appdata { $path = "$env:appdata\secrets" }
             Default { $path = "$pshpath\profile\secrets" }
         }
-        $file = Join-Path $path ($name + '.json')
+        $file = Join-Path $path ($name + '.secret.json')
         $null = Test-Path -Path $file
         $import = Get-Content -Raw -Path $file -Encoding UTF8 | ConvertFrom-Json
     }
@@ -160,18 +168,20 @@ Function Get-MySecret {
 Function Get-MySecretList {
     [CmdletBinding()]
     param(
-        [ArgumentCompletions('Cloud','Local','OneDrive')]
+        [Parameter()]
+        [ArgumentCompletions('Cloud','Local','OneDrive','appdata')]
         [String] $Location
     )
     Switch ($Location) {
         Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/onedrive/googledrive folder
         Local { $path = "$env:localappdata\secrets" }
         OneDrive { $path = "$env:OneDrive\secrets" }
+        appdata { $path = "$env:appdata\secrets" }
         Default { $path = "$pshpath\profile\secrets" }
     }
     try {
         $null = Test-Path -Path $path
-        $secrets = Get-ChildItem -Path $path -Filter *.json
+        $secrets = Get-ChildItem -Path $path -Filter *.secret.json
         if ($secrets) {
             $list = foreach ($item in $secrets) {
                 $load = Get-Content -Raw -Path $item.FullName -Encoding UTF8 | ConvertFrom-Json
@@ -197,20 +207,21 @@ Function Get-MySecretList {
 Function Remove-MySecret {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String] $Name,
-        [ArgumentCompletions('Cloud','Local','OneDrive')]
+        [ArgumentCompletions('Cloud','Local','OneDrive','appdata')]
         [String] $Location
     )
     Switch ($Location) {
         Cloud { $path = "$pshpath\profile\secrets" } #update this to dropbox/onedrive/googledrive folder
         Local { $path = "$env:localappdata\secrets" }
         OneDrive { $path = "$env:OneDrive\secrets" }
+        appdata { $path = "$env:appdata\secrets" }
         Default { $path = "$pshpath\profile\secrets" }
     }
     try {
-        $file = Join-Path $path ($name + '.json')
+        $file = Join-Path $path ($name + '.secret.json')
         $null = Test-Path -Path $file
         Remove-Item -Path $file
         if (-not (Test-Path -Path $file)) {
