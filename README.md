@@ -1,3 +1,3 @@
 # Powershell
 
-collection of fun and useful scripts/functions.
+random collection of scripts/functions
