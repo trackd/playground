@@ -1,6 +1,7 @@
 ﻿function Resolve-Command {
     <#
     .DESCRIPTION
+    for test/debug and learning how things work/built.
     trackd
     .EXAMPLE
     Resolve-Command <CommandName>
@@ -59,7 +60,7 @@
             ($results.Definition.Trim() -replace "(?m)^\s*`r`n",'') + "`n}"
         } elseif ($results.CommandType -eq 'Cmdlet') {
             #if it's a cmdlet try something but recommend ilspy for dll.
-            Write-Warning 'This is a cmdlet, you need ilspy to peek inside it. https://github.com/icsharpcode/ILSpy'
+            Write-Warning 'This is a cmdlet, you need a .NET Decompiler, like ilspy to peek inside it. https://github.com/icsharpcode/ILSpy'
             Write-Output "File: $($results.DLL)`n"
             Write-Output "Parameters: $($results.ParameterSets)`n"
             Write-Output "[cmdlet proxycommand] $($results.Name)"
