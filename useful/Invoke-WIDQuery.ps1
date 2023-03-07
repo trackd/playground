@@ -4,6 +4,7 @@ Function Invoke-WIDQuery {
         Windows Internal Database query for things like rds broker database, wsus etc.
         might need elevated permission if run against local db.
         inspiration from various code out there.
+        trackd
         .PARAMETER ComputerName
         supply remote server, if skipped it will connect locally.
         .PARAMETER Query
@@ -23,6 +24,8 @@ Function Invoke-WIDQuery {
         SELECT * from [RDCms].[rds].[RoleRdvh]
         ELECT * from [RDCms].[rds].[RoleRdwa]
         "select name from sys.databases"
+        .LINK
+        https://github.com/trackd/Powershell
     #>
     [CmdletBinding()]
     param (

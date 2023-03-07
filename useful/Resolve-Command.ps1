@@ -5,7 +5,7 @@
     trackd
     .EXAMPLE
     Resolve-Command <CommandName>
-    Get-Command <Commmand | Resolve-Command
+    Get-Command <Commmand> | Resolve-Command
     shows you the code from the function.
     shows a proxycmd for cmdlets.
     follows aliases to source.
@@ -56,10 +56,10 @@
             Write-Output "File: $($results.ScriptBlock.file)"
             Write-Output "Parameters: $($results.ParameterSets)"
             Write-Output "Function $($results.Name) {"
-            #just cleaning up empty space/rows and adding a } on newline.
+            #just cleaning up empty space and adding a } on newline.
             ($results.Definition.Trim() -replace "(?m)^\s*`r`n",'') + "`n}"
         } elseif ($results.CommandType -eq 'Cmdlet') {
-            #if it's a cmdlet try something but recommend ilspy for dll.
+            #if it's a cmdlet try proxy but recommend ilspy for dll.
             Write-Warning 'This is a cmdlet, you need a .NET Decompiler, like ilspy to peek inside it. https://github.com/icsharpcode/ILSpy'
             Write-Output "File: $($results.DLL)`n"
             Write-Output "Parameters: $($results.ParameterSets)`n"
@@ -70,5 +70,5 @@
             #else just output all, like for applications.
             $results | Format-List *
         }
-    } else { Write-Error "command not found: $($name)" }
+    } else { Write-Error "Command not found: $($name)" }
 }
