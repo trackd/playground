@@ -5,6 +5,8 @@ Function Invoke-SQLQuery {
         might need elevated permission if run against local WID db.
         inspiration from various code out there.
         successor of Invoke-WIDQuery, figured it would make more sense to support all server instances with small changes.
+        it feels a bit redundant but it's nice to have fallback on .NET method for query and support for running against multiple servers.
+        probably better to just use the SQLServer module if doing alot of work, alot more flexible.
         trackd
         .PARAMETER ComputerName
         supply remote server, if skipped it will connect locally.
@@ -19,11 +21,13 @@ Function Invoke-SQLQuery {
         .PARAMETER WID
         if enabled it will query WID instance np:\\.\pipe...
         .EXAMPLE
-        Invoke-WIDQuery -ComputerName <server> -Database rdcms -Query 'SELECT * from [rds].[server]'
+        Invoke-SQLQuery -ComputerName <server> -WID -Database rdcms -Query 'SELECT * from [rds].[server]'
         .EXAMPLE
-        Invoke-WIDQuery -ComputerName <server> -Database master -Query 'SELECT name, database_id, create_date FROM sys.databases'
+        Invoke-SQLQuery -ComputerName <server> -WID -Database master -Query 'SELECT name, database_id, create_date FROM sys.databases'
+        .EXAMPLE
+        Invoke-SQLQuery -ComputerName <server> -ServerInstance <name> -Database master -Query 'SELECT name, database_id, create_date FROM sys.databases'
         .NOTES
-        rds relevant tables for things.
+        rds relevant tables for things. (dont forget -WID)
         SELECT * from [RDCms].[rds].[Server]
         SELECT * from [RDCms].[rds].[RoleRdsh]
         SELECT * from [RDCms].[rds].[RoleRdcb]
