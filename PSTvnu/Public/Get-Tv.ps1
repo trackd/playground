@@ -84,7 +84,6 @@
             Default { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
         }
         $tvschedule = [System.Collections.Generic.List[psobject]]::new()
-        $ChannelLookup = Get-ChannelID
         $useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
         $headers = @{
             'authority'       = 'web-api.tv.nu'
@@ -100,6 +99,7 @@
     process {
         try {
             if ($Channel) {
+                $ChannelLookup = Get-ChannelID #-Channel $channel
                 $channelselection = "&modules[]=$($ChannelLookup[$Channel])"
             }
             if (!$Channel) {
