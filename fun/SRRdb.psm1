@@ -403,9 +403,9 @@ function Search-SRRdb {
         [ValidateSet('date-asc','date-dsc')]
         [string]
         $order,
-        [String]
+        [Regex]
         $Include,
-        [String]
+        [Regex]
         $Exclude
     )
     Write-Verbose "Module: $($ExecutionContext.SessionState.Module.Name) Command: $($MyInvocation.MyCommand.Name) Param: $($PSBoundParameters.GetEnumerator())"
@@ -435,7 +435,7 @@ function Search-SRRdb {
         $results = Get-SRRdb -Search "$($StringReady)"
         foreach ($object in $results) {
             if (($object.Release -match $exclude) -and ($exclude.Length -gt 0)) {
-                Write-Verbose "Exclude: $($object.Title) match: ""$($matches.Values)"" in exclude list: $($exclude)"
+                Write-Verbose "Exclude: $($object.Release) match: ""$($matches.Values)"" in exclude list: $($exclude)"
                 continue
             }
             if ($object.Release -match $include) {
