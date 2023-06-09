@@ -465,7 +465,7 @@ function Get-SRRSearchAlternative {
     )
     Write-Verbose "Command: $($MyInvocation.MyCommand.Name) Param: $($PSBoundParameters.GetEnumerator())"
     $source = Get-SRRdb -GetIMDB $Alternative
-    Search-SRR -imdb $source.imdb
+    Search-SRR -imdbNumber $source.imdb
 }
 
 
