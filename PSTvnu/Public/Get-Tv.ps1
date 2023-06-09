@@ -67,31 +67,40 @@
     .LINK
     credit www.tv.nu
 #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = '__AllParameterSets')]
     param(
         [ValidateSet('Today','Tomorrow')]
-        [string] $Day,
-        [Switch] $Full,
-        [string] $Channel,
-        [string] $Title,
-        [Switch] $Movies,
-        [Switch] $Series
+        [String]
+        $Day,
+        [Switch]
+        $Full,
+        [Parameter(ParameterSetName = 'Title')]
+        [String]
+        $Title,
+        [Parameter(ParameterSetName = 'Movies')]
+        [Switch]
+        $Movies,
+        [Parameter(ParameterSetName = 'Series')]
+        [Switch]
+        $Series,
+        [String]
+        $Channel
     )
     begin {
+        Write-Verbose "Module: $($ExecutionContext.SessionState.Module.Name) Command: $($MyInvocation.MyCommand.Name) ParameterSetName: $($PSCmdlet.ParameterSetName) Param: $($PSBoundParameters.GetEnumerator())"
         switch ($Day) {
             Today { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
             Tomorrow { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).ToString('yyyy-MM-dd') } else { $date = (Get-Date).AddDays(1).ToString('yyyy-MM-dd') } }
             Default { if ((Get-Date) -lt (Get-Date 05:00)) { $date = (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } else { $date = (Get-Date).ToString('yyyy-MM-dd') } }
         }
         $tvschedule = [System.Collections.Generic.List[psobject]]::new()
-        $useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
+        $useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
         $headers = @{
             'authority'       = 'web-api.tv.nu'
             'method'          = 'GET'
             'scheme'          = 'https'
             'accept'          = 'application/json, text/plain, */*'
             'accept-encoding' = 'gzip, deflate, br'
-            'accept-language' = 'en-US,en;q=0.9,sv-SE;q=0.8,sv;q=0.7'
             'origin'          = 'https://www.tv.nu'
         }
         $allchannels = '&modules[]=pp-13&modules[]=pp-12&modules[]=ch-51&modules[]=ch-52&modules[]=pp-14&modules[]=ed-6&modules[]=pp-18&modules[]=ch-60&modules[]=ed-19&modules[]=ch-27&modules[]=pl-3&modules[]=pp-31&modules[]=ch-63&modules[]=ch-65&modules[]=pp-9&modules[]=ch-64&modules[]=ed-15&modules[]=ch-66&modules[]=pp-34&modules[]=ch-67&modules[]=pp-30&modules[]=tl-13&modules[]=ch-68&modules[]=pp-4&modules[]=ch-70&modules[]=pp-16&modules[]=ch-88&modules[]=pc-8&modules[]=ch-132&modules[]=pl-2&modules[]=ch-49&modules[]=ch-53&modules[]=pp-33&modules[]=ch-54&modules[]=pp-36&modules[]=ch-30233'
@@ -99,53 +108,59 @@
     process {
         try {
             if ($Channel) {
-                $ChannelLookup = Get-ChannelID #-Channel $channel
+                $ChannelLookup = Get-ChannelID
                 $channelselection = "&modules[]=$($ChannelLookup[$Channel])"
-            }
-            if (!$Channel) {
+            } else {
                 $channelselection = $allchannels
             }
             $url = "https://web-api.tv.nu/startFeed?date=$($date)&limit=8$($channelselection)&offset=0"
             $raw = Invoke-RestMethod -UseBasicParsing -UserAgent $useragent -Headers $headers -Uri $url
-            $Response += $raw.data.modules.content
+            $Response = $raw.data.modules.content
             while ($null -ne $raw.data.nextoffset) {
+                Write-Verbose "Paginating response, $($raw.data.nextoffset)"
                 $url = "https://web-api.tv.nu/startFeed?date=$($date)&limit=12$($channelselection)&offset=$($raw.data.nextoffset)"
                 $raw = Invoke-RestMethod -UserAgent $useragent -Headers $headers -Uri $url
                 $Response += $raw.data.modules.content
             }
-            $Response | ForEach-Object {
-                $chan = $_.name
-                $_.broadcasts | ForEach-Object {
-                    if ($null -ne $_.type -And $_.endTime -gt [DateTimeOffset]::Now.ToUnixTimeMilliSeconds() ) {
-                        $object = [pscustomobject]@{
-                            Channel   = $chan
-                            Title     = $_.title
-                            StartFull = [System.DateTimeOffset]::FromUnixTimeMilliseconds($_.startTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
-                            EndFull   = [System.DateTimeOffset]::FromUnixTimeMilliseconds($_.endTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
-                            Start     = [System.DateTimeOffset]::FromUnixTimeMilliseconds($_.startTime).LocalDateTime.ToString('ddd HH:mm')
-                            End       = [System.DateTimeOffset]::FromUnixTimeMilliseconds($_.endTime).LocalDateTime.ToString('ddd HH:mm')
-                            Tags      = $_.tags -join ','
-                            Type      = $_.type
-                            Movie     = $_.isMovie
-                            Rating    = $_.imdb.rating
-                            imdb      = $_.imdb.link
+            #Write-Verbose "Response: $($Response.count)"
+            foreach ($object in $Response) {
+                #need to iterate over all channels and then over each broadcast.
+                if ($object.Name) {
+                    Write-Verbose "Channel: $($object.Name) Broadcasts: $($object.broadcasts.count)"
+                    foreach ($broadcast in $object.broadcasts) {
+                        if ($null -ne $broadcast.type -And $broadcast.endTime -gt [DateTimeOffset]::Now.ToUnixTimeMilliSeconds() ) {
+                            #Write-Verbose $broadcast.title
+                            $item = [PSCustomObject]@{
+                                Channel   = $object.Name
+                                Title     = $broadcast.title
+                                StartFull = [System.DateTimeOffset]::FromUnixTimeMilliseconds($broadcast.startTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
+                                EndFull   = [System.DateTimeOffset]::FromUnixTimeMilliseconds($broadcast.endTime).LocalDateTime.ToString('yyyy-MM-dd HH:mm')
+                                Start     = [System.DateTimeOffset]::FromUnixTimeMilliseconds($broadcast.startTime).LocalDateTime.ToString('ddd HH:mm')
+                                End       = [System.DateTimeOffset]::FromUnixTimeMilliseconds($broadcast.endTime).LocalDateTime.ToString('ddd HH:mm')
+                                Tags      = $broadcast.tags -join ','
+                                Type      = $broadcast.type
+                                Movie     = $broadcast.isMovie
+                                Rating    = $broadcast.imdb.rating
+                                imdb      = $broadcast.imdb.link
+                            }
+                            $tvschedule.add($item)
                         }
-                        $tvschedule.add($object)
                     }
                 }
             }
+            Write-Verbose "Total tv broadcasts found: $($tvschedule.count)"
         } catch {
-            Write-Error "ERROR $($error[0].exception.message)"
-            break
+            throw $_
         }
     }
     end {
-        if (!$Full) {
+        if (-Not $Full) {
             $fields = 'Channel', 'Title', 'Start', 'End'
             $default = New-Object System.Management.Automation.PSPropertySet('DefaultDisplayPropertySet',[string[]]$fields)
             $members = [System.Management.Automation.PSMemberInfo[]]@($default)
             $tvschedule | Add-Member MemberSet PSStandardMembers $members
         }
+        # Unfortunately api does not support filter
         if ($Title) {
             $tvschedule | Where-Object -FilterScript { $_.Title -like "*$($Title)*" } | Sort-Object -Property StartFull
         } elseif ($Movies) {

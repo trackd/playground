@@ -6,13 +6,14 @@ Foreach ($file in @($Public + $Private)) {
     Try {
         . $file.fullname
     } Catch {
-        Write-Error "ERROR $($error[0].exception.message)"
+        throw $PSItem
     }
 }
 
 Export-ModuleMember -Function * -Alias *
 
-#Register autocomplete for Get-Tv -Channel <autocomplete>
-Set-ChannelAutoCompleter
 #update channellist
 Get-ChannelID
+
+#Register autocomplete for Get-Tv -Channel <autocomplete>
+Set-ChannelAutoCompleter

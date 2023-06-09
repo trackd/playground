@@ -12,7 +12,7 @@
     RootModule           = 'PSTvnu.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.6.7'
+    ModuleVersion        = '0.7'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -75,7 +75,7 @@
     #CmdletsToExport   = @()
 
     # Variables to export from this module
-    VariablesToExport    = '*'
+    # VariablesToExport    = '*'
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
     #AliasesToExport   = @()
@@ -98,16 +98,20 @@
             Tags         = @('Tv','Sport','Swedish')
 
             # A URL to the license for this module.
-            LicenseUri   = 'https://github.com/trackd/Powershell/blob/master/LICENSE'
+            # LicenseUri   = 'https://github.com/trackd/Powershell/blob/master/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri   = 'https://github.com/trackd/Powershell'
+            #ProjectUri   = 'https://github.com/trackd/Powershell'
 
             # A URL to an icon representing this module.
             # IconUri = ''
 
             # ReleaseNotes of this module
             ReleaseNotes = '
+            ver 0.7
+            fixed ArgumentCompletion.
+            some minor bugfixes.
+            performance enhancements.
             ver 0.6.x
             added pagination to Get-Tvsport
             added more filtering options to Get-TvSport
@@ -136,4 +140,3 @@
     # DefaultCommandPrefix = ''
 
 }
-
