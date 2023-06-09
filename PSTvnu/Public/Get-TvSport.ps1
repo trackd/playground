@@ -86,17 +86,18 @@
 		[String] $Tournament
 	)
 	begin {
+
 		switch ($Sport) {
-			All { $sportfilter = 'sportGroups[]=1&sportGroups[]=2&sportGroups[]=6&sportGroups[]=7&sportGroups[]=8&sportGroups[]=9&sportGroups[]=10&sportGroups[]=11' }
-			Fotboll { $sportfilter = 'sportGroups[]=1' }
-			Ishockey { $sportfilter = 'sportGroups[]=2' }
-			Bandy { $sportfilter = 'sportGroups[]=6' }
-			Handboll { $sportfilter = 'sportGroups[]=7' }
-			Tennis { $sportfilter = 'sportGroups[]=8' }
-			Vintersport { $sportfilter = 'sportGroups[]=9' }
-			Motorsport { $sportfilter = 'sportGroups[]=10' }
-			Other { $sportfilter = 'sportGroups[]=11' }
-			Default { $sportfilter = 'sportGroups[]=1&sportGroups[]=2&sportGroups[]=6&sportGroups[]=7&sportGroups[]=8&sportGroups[]=9&sportGroups[]=10&sportGroups[]=11' }
+			All { $sportfilter = 'sportSlugs[]=fotboll&sportSlugs[]=ishockey&sportSlugs[]=bandy&sportSlugs[]=handboll&sportSlugs[]=tennis&sportSlugs[]=vintersport&sportSlugs[]=motorsport&sportSlugs[]=ovrigt' }
+			Fotboll { $sportfilter = 'sportSlugs[]=fotboll' }
+			Ishockey { $sportfilter = 'sportSlugs[]=ishockey' }
+			Bandy { $sportfilter = 'sportSlugs[]=bandy' }
+			Handboll { $sportfilter = 'sportSlugs[]=handboll' }
+			Tennis { $sportfilter = 'sportSlugs[]=tennis' }
+			Vintersport { $sportfilter = 'sportSlugs[]=vintersport' }
+			Motorsport { $sportfilter = 'sportSlugs[]=motorsport' }
+			Other { $sportfilter = 'sportSlugs[]=ovrigt' }
+			Default { $sportfilter = 'sportSlugs[]=fotboll&sportSlugs[]=ishockey&sportSlugs[]=bandy&sportSlugs[]=handboll&sportSlugs[]=tennis&sportSlugs[]=vintersport&sportSlugs[]=motorsport&sportSlugs[]=ovrigt' }
 		}
 		if ($Viewall) { $Viewall2 = 'true' } else { $Viewall2 = 'false' }
 		if ($Reruns) { $Reruns2 = 'true' } else { $Reruns2 = 'false' }
@@ -110,7 +111,7 @@
 	}
 	process {
 		try {
-			$useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
+			$useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
 			$headers = @{
 				'authority'       = 'web-api.tv.nu'
 				'method'          = 'GET'
@@ -119,9 +120,10 @@
 				'accept-encoding' = 'gzip, deflate, br'
 				'origin'          = 'https://www.tv.nu'
 			}
-			$channels = 'modules[]=pp-13&modules[]=pp-12&modules[]=ch-51&modules[]=ch-52&modules[]=pp-14&modules[]=ed-6&modules[]=pp-18&modules[]=ch-60&modules[]=ed-19&modules[]=ch-27&modules[]=pl-3&modules[]=pp-31&modules[]=ch-63&modules[]=ch-65&modules[]=pp-9&modules[]=ch-64&modules[]=ed-15&modules[]=ch-66&modules[]=pp-34&modules[]=ch-67&modules[]=pp-30&modules[]=tl-13&modules[]=ch-68&modules[]=pp-4&modules[]=ch-70&modules[]=pp-16&modules[]=ch-88&modules[]=pc-8&modules[]=ch-132&modules[]=pl-2&modules[]=ch-49&modules[]=ch-53&modules[]=pp-33&modules[]=ch-54&modules[]=pp-36&modules[]=ch-30233'
+			$channels = 'modules[]=pp-13&modules[]=pp-12&modules[]=ch-51&modules[]=ch-52&modules[]=pp-14&modules[]=ed-6&modules[]=pp-18&modules[]=ch-60&modules[]=ed-19&modules[]=ch-27&modules[]=pl-3&modules[]=pp-31&modules[]=ch-63&modules[]=ch-65&modules[]=pp-9&modules[]=ch-64&modules[]=ed-15&modules[]=ch-66&modules[]=pp-37&modules[]=ch-67&modules[]=pp-30&modules[]=tl-13&modules[]=ch-68&modules[]=pp-4&modules[]=ch-70&modules[]=pp-16&modules[]=ch-88&modules[]=pc-8&modules[]=ch-132&modules[]=pl-2&modules[]=ch-49&modules[]=ch-53&modules[]=pp-38&modules[]=ch-54&modules[]=pp-36&modules[]=ch-30233'
 			$url = "https://web-api.tv.nu/sport/schedule?$($channels)&preset=sport&scheduleDate=$($date)&$($sportfilter)&viewAll=$($viewall2)&withReruns=$($reruns2)"
 			$raw = Invoke-RestMethod -UserAgent $useragent -Headers $headers -Uri $url
+			#Write-Debug $($url)
 			$Response = $raw.data
 			while ($false -ne $raw.meta.pagination.hasNext) {
 				$url = "https://web-api.tv.nu/sport/schedule?$($channels)&page=$($i)&preset=sport&scheduleDate=$($date)&$($sportfilter)&viewAll=$($viewall2)&withReruns=$($reruns2)"
@@ -129,7 +131,7 @@
 				$Response += $raw.data
 				$i++
 			}
-			foreach ($game in $Response) {
+			foreach ($game in $Response.broadcasts) {
 				$object = [pscustomobject]@{
 					Title       = $game.title
 					Live        = $game.isLive
