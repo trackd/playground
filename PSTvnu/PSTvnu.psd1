@@ -109,6 +109,7 @@
             # ReleaseNotes of this module
             ReleaseNotes = '
             ver 0.7
+            fixed Get-TvSport broken API syntax after changes on website.
             fixed ArgumentCompletion.
             some minor bugfixes.
             performance enhancements.
