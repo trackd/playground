@@ -59,7 +59,7 @@
     # Search
     Get-SRRdb -Search 'Harry Potter And The Deathly Hallows'
     .EXAMPLE
-    Get-SRRDb -GetIMDB (Get-SRRdb -SearchIMDB 1630029)[0].release
+    Get-SRRDb -GetIMDB (Get-SRRdb -imdbNumber 1630029)[0].release
     .Notes
     defaults
     add to $profile for keeping your include/exclude
@@ -98,8 +98,7 @@
         #  TODO: should be nullable to override PSDefaultParameterValues, without doing [-Include '']
         [AllowEmptyString()]
         [AllowNull()]
-        # [String]
-        [Regex]
+        [String]
         # might want to set the default here
         $Include,
         [Parameter(ParameterSetName = 'Feed', HelpMessage = 'Exclude filter (Regex) for output results')]
@@ -107,8 +106,7 @@
         #  TODO: should be nullable to override PSDefaultParameterValues, without doing [-Exclude '']
         [AllowEmptyString()]
         [AllowNull()]
-        # [String]
-        [Regex]
+        [String]
         # might want to set the default here
         $Exclude,
         [Parameter(ParameterSetName = 'Feed', HelpMessage = 'Disable filters if using PSDefaultParameterValues')]
@@ -403,9 +401,9 @@ function Search-SRRdb {
         [ValidateSet('date-asc','date-dsc')]
         [string]
         $order,
-        [Regex]
+        [string]
         $Include,
-        [Regex]
+        [string]
         $Exclude
     )
     Write-Verbose "Module: $($ExecutionContext.SessionState.Module.Name) Command: $($MyInvocation.MyCommand.Name) Param: $($PSBoundParameters.GetEnumerator())"
