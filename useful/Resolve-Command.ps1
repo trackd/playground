@@ -57,7 +57,7 @@
                 Write-Information "Parameters: $($results.ParameterSets)"
                 Write-Codeblock $results.ScriptBlock.ast.extent.text -SyntaxHighlight
                 $InformationPreference = $pref
-            } elseif (-Not $beta) {
+            } else {
                 $pref = $InformationPreference
                 $InformationPreference = 'Continue'
                 Write-Information "File: $($results.ScriptBlock.file)"
