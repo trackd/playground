@@ -49,23 +49,21 @@
             $results = Get-Command $results.definition
         }
         if ($results.CommandType -eq 'Function') {
-            if ($beta) {
-                Write-Verbose 'beta'
+            if ($Beta -and (Get-Module -ListAvailable -Name PwshSyntaxHighlight)) {
                 $pref = $InformationPreference
                 $InformationPreference = 'Continue'
                 Write-Information "File: $($results.ScriptBlock.file)"
                 Write-Information "Parameters: $($results.ParameterSets)"
+                #output with PwshSyntaxHighlight
                 Write-Codeblock $results.ScriptBlock.ast.extent.text -SyntaxHighlight
                 $InformationPreference = $pref
             } else {
+                if ($beta) { Write-Warning 'Called beta functionality but missing PS Module: PwshSyntaxHighlight' }
                 $pref = $InformationPreference
                 $InformationPreference = 'Continue'
                 Write-Information "File: $($results.ScriptBlock.file)"
                 Write-Information "Parameters: $($results.ParameterSets)"
-                # Write-Output $($results.ScriptBlock.ast.extent.text)
                 Write-Output $results.ScriptBlock.ast.extent.text
-                #pansies
-                # (New-Text -Object $results.ScriptBlock.ast.extent.text -BackgroundColor Gray34 -ForegroundColor Orange).tostring()
                 $InformationPreference = $pref
             }
         } elseif ($results.CommandType -eq 'Cmdlet') {
