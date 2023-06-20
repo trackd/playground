@@ -17,9 +17,11 @@
         [ValidateSet('Command','CommandParameter','CommandArgument','Number','String','Variable','Member','Attribute','Type','Operator','GroupStart','GroupEnd','Keyword','Comment','NewLine','All')]
         [String[]]
         $Type,
+        [Parameter(Mandatory, ParameterSetName = 'Path')]
         [ValidateScript({ Test-Path -LiteralPath $_ })]
         [String]
         $Path,
+        [Parameter(Mandatory, ParameterSetName = 'Function')]
         [ValidateScript({ Test-Path -LiteralPath Function:\$_ })]
         [String]
         $Function,
@@ -37,9 +39,9 @@
     }
     process {
         if ($Type -eq 'All') {
-            $ASTToken = [System.Management.Automation.PSParser]::Tokenize($content,[ref]$null)
+            $ASTToken = [System.Management.Automation.PSParser]::Tokenize($Content,[ref]$null)
         } else {
-            $ASTToken = [System.Management.Automation.PSParser]::Tokenize($content,[ref]$null) | Where-Object { $_.Type -in $Type }
+            $ASTToken = [System.Management.Automation.PSParser]::Tokenize($Content,[ref]$null) | Where-Object { $_.Type -in $Type }
         }
     }
     end {
