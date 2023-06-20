@@ -67,37 +67,36 @@ Function Invoke-SQLQuery {
         if ($Credential) {
             $params.Credential = $Credential
         }
-        if ($WID.IsPresent) {
+        if ($WID) {
             $SQLInstance = 'np:\\.\pipe\MICROSOFT##WID\tsql\query'
         } else {
             $SQLInstance = $ServerInstance
         }
     }
     process {
-        Try {
+        try {
             $SQLblock = {
                 if (Get-Module -ListAvailable -Name SqlServer) {
                     Import-Module -Name SqlServer
                     $value = Invoke-Sqlcmd -ServerInstance $using:SQLInstance -Database $using:Database -Query $using:Query
                     return $value
                 } else {
-                    $sqlconn = New-Object System.Data.SqlClient.SqlConnection
-                    $sqlconn.ConnectionString = "Server=$($using:SQLInstance);Integrated Security=True;Initial Catalog=$($using:Database);"
+                    $sqlconn = [System.Data.SqlClient.SqlConnection]::new("Server=$($using:SQLInstance);Integrated Security=True;Initial Catalog=$($using:Database);")
                     $sqlconn.Open()
                     $sqlcmd = $sqlconn.CreateCommand()
                     $sqlcmd.CommandText = $using:Query
-                    $adapter = New-Object System.Data.SqlClient.SqlDataAdapter $sqlcmd
-                    $data = New-Object System.Data.Dataset
+                    $adapter = [System.Data.SqlClient.SqlDataAdapter]::new($sqlcmd)
+                    $data = [System.Data.Dataset]::new()
                     $data.columns.add('PSComputerName')
                     $data.Columns['PSComputerName'].DefaultValue = $env:computername
-                    $adapter.fill($data) | Out-Null
+                    [void]$adapter.fill($data)
                     $sqlconn.close()
                     $sqlconn.dispose()
                     return $data.Tables.rows
                 }
             }
             $results = Invoke-Command @params -ScriptBlock $SQLblock
-        } Catch {
+        } catch {
             throw $_
         }
     }

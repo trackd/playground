@@ -1,6 +1,20 @@
 function Get-ChannelID {
     [CmdletBinding()]
     param(
+        [String] $file = "$PSScriptRoot\channels.json"
+    )
+    $json = Get-Content -Raw -Path $file | ConvertFrom-Json
+    $ChannelLookup = @{}
+    foreach ($item in $json.psobject.Properties) {
+        $ChannelLookup[$item.Name] = $item.Value
+    }
+    return $ChannelLookup
+
+}
+<#
+function Get-ChannelID {
+    [CmdletBinding()]
+    param(
         [String] $channel,
         [String] $file = "$PSScriptRoot\channels.json"
     )
@@ -25,3 +39,4 @@ function Get-ChannelID {
         return $ChannelLookup
     }
 }
+#>

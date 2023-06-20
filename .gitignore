@@ -2,3 +2,7 @@
 tmp/*
 local/*
 !SN?_*.json
+!channels.json
+PSTvnu/Private/Update-ChannelList.disabled
+config.json
+config.psd1
