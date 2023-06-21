@@ -14,12 +14,10 @@
         [Parameter()]
         [System.Collections.IDictionary]
         $Params,
+        [Parameter(Mandatory)]
         [String]
-        $Method
-        [Parameter()]
-        [String]
-        $baseUrl
-        [Parameter()]
+        $baseUrl,
+        [Parameter(Mandatory)]
         [String]
         $apikey
     )
