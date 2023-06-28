@@ -1,5 +1,4 @@
 ﻿#Requires -Version 7.0
-$ErrorActionPreference = 'Stop'
 <#
 testing securestring and encrypted string for storing secrets more securely
 trackd 2022-12-07
@@ -99,19 +98,19 @@ Function Set-MySecret {
 Function Get-MySecret {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [String] $Name,
         [ArgumentCompletions('Cloud','Local','OneDrive','appdata')]
         [String] $Location,
         [ValidateNotNullOrEmpty()]
-        [Parameter(Mandatory = $true,ParameterSetName = 'EncryptionKey')]
+        [Parameter(Mandatory,ParameterSetName = 'EncryptionKey')]
         [String] $Encryptionkey,
         [Parameter()]
         [switch] $PSCredential,
         [Parameter()]
         [Switch] $Print,
-        [Parameter(Mandatory = $true,ParameterSetName = 'DAPI')]
+        [Parameter(Mandatory,ParameterSetName = 'DAPI')]
         [Switch] $DAPI
     )
     begin {
