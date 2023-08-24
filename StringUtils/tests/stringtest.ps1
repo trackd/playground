@@ -112,10 +112,10 @@ else {
     $commands = Get-Command -Module StringUtils -Name Remove-Whitespace
 
 }
-
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $timearray = [System.Collections.Generic.List[psobject]]::new()
-$timerinput = $timerpipeline = $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$timerinput = [System.Diagnostics.Stopwatch]::StartNew()
+$timerpipeline = [System.Diagnostics.Stopwatch]::StartNew()
 $f = "$($PSStyle.Background.red)False$($PSStyle.Reset)"
 $t = "$($PSStyle.Background.green)True $($PSStyle.Reset)"
 $r = foreach ($c in $commands) {
