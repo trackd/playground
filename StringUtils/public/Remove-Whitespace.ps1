@@ -24,6 +24,9 @@
             # dotnet whitespace, tabs, newlines, carriage returns, start and end of string
             # this in combination with [String]::IsNullOrEmpty($InputObject) would work for most scenarios.
             testing         = '^\s+|\s+$|\t+|\r?\n'
+            # simplified from https://stackoverflow.com/a/4903946
+            # but is this faster than hardcoding the chars?
+            simpler         = '[^\S ]+' # alternative from same post. [\s--[ ]]
             Whitespace      = @(
                 #'\u0020' # space, dont want to break sentences.
                 '\u00A0' # non-breaking space
