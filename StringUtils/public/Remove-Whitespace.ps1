@@ -90,7 +90,7 @@
                 [char]0x2029,
                 # ideographic space
                 [char]0x3000
-            ) -join ','
+            ) #-join ','
         }
     }
     process {

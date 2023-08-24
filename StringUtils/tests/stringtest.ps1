@@ -97,6 +97,10 @@ $sampledata = [Ordered]@{
         Input    = "😎🎶😢😜🧍‍♂️🏃‍♂️🏃‍♀️🧎‍♂️👨‍🦼👩‍🦼🤚🤜"
         Expected = '😎🎶😢😜🧍‍♂️🏃‍♂️🏃‍♀️🧎‍♂️👨‍🦼👩‍🦼🤚🤜'
     }
+    Test22 = @{
+        Input    = @("String1 `n1", "String2 `n2", "String3 `n2")
+        Expected = @("String1 1", "String2 2", "String3 2")
+    }
 }
 
 if ($PSVersionTable.PSVersion.Major -ge 7) {
@@ -111,35 +115,60 @@ else {
 
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $timearray = [System.Collections.Generic.List[psobject]]::new()
+$timerinput = $timerpipeline = $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $f = "$($PSStyle.Background.red)False$($PSStyle.Reset)"
 $t = "$($PSStyle.Background.green)True $($PSStyle.Reset)"
 $r = foreach ($c in $commands) {
     $stopwatch.Restart()
     $sampledata.keys | ForEach-Object {
         $curr = $sampledata[$_]
+        $timerinput.restart()
         $testin = & $c $($curr.Input)
-        if ($curr.Expected -ceq $testin) {
-            $in = $t
-        }
-        else {
-            $in = $f
-        }
+        #this is just super duper stupid, but fun.
+        $runtimeinput = $timerinput.elapsed.nanoseconds
+        $timerpipeline.restart()
         $testpipe = $Curr.Input | & $c
-        if ($curr.Expected -ceq $testpipe) {
-            $pipe = $t
+        $runtimepipeline = $timerpipeline.elapsed.Nanoseconds
+        if ($curr.Expected -is [String]) {
+            if ($curr.Expected -ceq $testin) {
+                $in = $t
+            }
+            else {
+                $in = $f
+            }
+            if ($curr.Expected -ceq $testpipe) {
+                $pipe = $t
+            }
+            else {
+                $pipe = $f
+            }
         }
-        else {
-            $pipe = $f
+        elseif ($Curr.Expected -is [array]) {
+            #compare the last object in the array
+            if ($curr.Expected[-1] -ceq $testin[-1]) {
+                $in = $t
+            }
+            else {
+                $in = $f
+            }
+            # compare the first object in the array
+            if ($curr.Expected[0] -ceq $testpipe[0]) {
+                $pipe = $t
+            }
+            else {
+                $pipe = $f
+            }
         }
         [PSCustomObject]@{
-            Function   = $c
-            Test       = $_
-            PipeTest   = $pipe
-            InputTest  = $in
-            Input      = $curr.Input
-            Expected   = $curr.Expected
-            ResultIn   = $testin
-            ResultPipe = $testpipe
+            Function     = $c
+            Test         = $_
+            PipeTest     = $pipe
+            InputTest    = $in
+            'Speed (ns)' = "[Input:$($runtimeinput)] [Pipe:$($runtimepipeline)]"
+            Input        = $curr.Input
+            Expected     = $curr.Expected
+            ResultIn     = $testin
+            ResultPipe   = $testpipe
         }
     }
     $timearray.add([PSCustomObject]@{
