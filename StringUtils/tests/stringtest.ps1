@@ -160,15 +160,17 @@ $r = foreach ($c in $commands) {
             }
         }
         [PSCustomObject]@{
-            Function     = $c
-            Test         = $_
-            PipeTest     = $pipe
-            InputTest    = $in
-            'Speed (ns)' = "[Input:$($runtimeinput)] [Pipe:$($runtimepipeline)]"
-            Input        = $curr.Input
-            Expected     = $curr.Expected
-            ResultIn     = $testin
-            ResultPipe   = $testpipe
+            Function   = $c
+            Test       = $_
+            PipeTest   = $pipe
+            InputTest  = $in
+            InputTime  = $runtimeinput
+            PipeTime   = $runtimepipeline
+            # 'Speed (ns)' = "[Input:$($runtimeinput)] [Pipe:$($runtimepipeline)]"
+            Input      = $curr.Input
+            Expected   = $curr.Expected
+            ResultIn   = $testin
+            ResultPipe = $testpipe
         }
     }
     $timearray.add([PSCustomObject]@{
@@ -179,7 +181,10 @@ $r = foreach ($c in $commands) {
 $good = $r | Where-Object { $_.PipeTest -eq $t -or $_.InputTest -eq $t }
 $bad = $r | Where-Object { $_.PipeTest -eq $f -or $_.InputTest -eq $f }
 
-$r | Select-Object -ExcludeProperty Input, ResultPipe | Sort-Object -Property Test,Function | Format-Table
+# $r | Select-Object -ExcludeProperty Input, ResultPipe | Sort-Object -Property Test,Function | Format-Table
+$r | Select-Object -ExcludeProperty Input*,ResultIn | Sort-Object -Property Test,Pipetime | Format-Table
+Write-Host `n
+$r | Select-Object -ExcludeProperty Pipe*,Input, ResultPipe | Sort-Object -Property Test,InputTime | Format-Table
 $timearray | Sort-Object -Property 'Time (ms)' | Format-Table
 Write-Host "Tested $($commands.count) commands against $($r.count * 2) tests"
 Write-Host "Passed: $($good.count * 2)"
