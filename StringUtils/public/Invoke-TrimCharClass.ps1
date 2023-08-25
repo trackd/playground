@@ -1,14 +1,16 @@
 ﻿Function Invoke-TrimCharClass {
+    <#
+    space is is not part of switch statement in the C# code.
+    hardcoded class of whitespace characters.
+    there is an alternative to use unicode characters like the rune function but it doesn't work as well.
+    #>
     [cmdletbinding()]
-    # [Alias('TrimPipeline')]
     param(
         [AllowNull()]
         [AllowEmptyString()]
         [parameter(Mandatory, ValueFromPipeline)]
         [String[]]
-        $String,
-        [Switch]
-        $NoTrim
+        $String
     )
     begin {
         if (-Not ('StringCleaner' -as [type])) {
@@ -20,14 +22,7 @@
             if ([String]::IsNullOrEmpty($item)) {
                 continue
             }
-            if ($NoTrim) {
-                [StringCleaner]::Trim($item)
-            }
-            else {
-                # using .Trim() to cleanup the input string after whitespace removal, should be safe to use for leading/trailing whitespace without touching spaces.
-                # todo: do this in the .net code.
-                [StringCleaner]::Trim($item).Trim()
-            }
+            [StringCleaner]::Trim($item).Trim()
         }
     }
 }
@@ -75,5 +70,64 @@ public static class StringCleaner {
 }
 '@
         Add-Type -TypeDefinition $StringCleaner -Language CSharp
+    }
+}
+Function Add-StringCleanerCategories {
+    <#
+    this method is just worse than the above, but it is here for reference.
+    it doesn't work and fails the tests.
+    #>
+    if (-Not ('StringCleanerCat' -as [type])) {
+        $StringCleanerCat = @'
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+
+public class StringCleaner {
+    public static string Trim(string str, string[] exclude)
+    {
+        List<char> excludeChars = new List<char>();
+        foreach (string excludeChar in exclude)
+        {
+            char excludeCharFirst = excludeChar[0];
+            excludeChars.Add(excludeCharFirst);
+        }
+
+        StringBuilder bufferSB = new StringBuilder();
+        foreach (char c in str)
+        {
+            if (excludeChars.Contains(c))
+            {
+                bufferSB.Append(c);
+                continue;
+            }
+            UnicodeCategory category = char.GetUnicodeCategory(c);
+            switch (category) {
+                case UnicodeCategory.Control:
+                case UnicodeCategory.SpaceSeparator:
+                case UnicodeCategory.LineSeparator:
+                case UnicodeCategory.ParagraphSeparator:
+                case UnicodeCategory.Surrogate:
+                case UnicodeCategory.OtherNotAssigned:
+                // Uncomment the following cases if needed for future tests
+                // case UnicodeCategory.Format:
+                // case UnicodeCategory.PrivateUse:
+                // case UnicodeCategory.OtherSymbol:
+                // case UnicodeCategory.OtherPunctuation:
+                // case UnicodeCategory.OtherNumber:
+                // case UnicodeCategory.MathSymbol:
+                    continue;
+                default:
+                    bufferSB.Append(c);
+                    break;
+            }
+        }
+        string trimmedString = bufferSB.ToString().Trim();
+        return trimmedString;
+    }
+}
+'@
+        Add-Type -TypeDefinition $StringCleanerCat -Language CSharp
     }
 }

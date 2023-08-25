@@ -170,3 +170,19 @@ Describe "Remove-Whitespace" {
         }
     }
 }
+
+Describe "Invoke-TrimRuneClass" {
+    Context "Invoke-TrimRuneClass" {
+        foreach ($testName in $sampledata.Keys) {
+            $testData = $sampledata[$testName]
+            It "pipeline test $testName" {
+                $pipe = $testData.Input | Invoke-TrimRuneClass
+                $pipe | Should -Be $testData.Expected
+            }
+            It "Input test $testName" {
+                $result = Invoke-TrimRuneClass $testData.Input
+                $result | Should -Be $testData.Expected
+            }
+        }
+    }
+}

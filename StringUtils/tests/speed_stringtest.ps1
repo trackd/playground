@@ -2,14 +2,49 @@
 i dont really know why i made this thing..
 mostly for fun and cause i wanted to see the visuals compared of the original string and the result.
 
+performance test
+
 appearently this is a thing
 '🤷‍♂️' -eq '🤷♂️'
 True
 (I do know why, but its still funny)
 
+should run the test once before upping the testruns just to let the dotnet classes load
+otherwise it skews the results a bit.
+normally first run for them are in 150ms range and then they drop to 2-3ms
+
+ps. i dont recommend running this on ps 5.1.
+
+#>
+<#
+with 2000 iterations.
+ie, 2000 of each test both Input and Pipeline.
+
+all time is in milliseconds
+> PS 7.4.0-preview.5
+Command                            Time
+-------                            ----
+Invoke-TrimCharClass            2865,99
+Invoke-TrimRuneClass            3149,11
+Remove-Whitespace               3680,94
+Invoke-TrimRunesRange          15276,63
+Invoke-TrimRunesWithCategories 24484,27
+Invoke-TrimRunes               28353,70
+
+> PS 7.3.6
+Command                            Time
+-------                            ----
+Invoke-TrimCharClass            3423,97
+Invoke-TrimRuneClass            4038,76
+Remove-Whitespace               5349,17
+Invoke-TrimRunesRange          16476,13
+Invoke-TrimRunesWithCategories 27051,54
+Invoke-TrimRunes               29565,24
 #>
 
 Import-Module -Name $PSScriptRoot/../StringUtils.psm1 -Force
+$testruns = 500
+
 
 
 $sampledata = [Ordered]@{
@@ -108,9 +143,7 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
 }
 else {
     # PS 5.1 Doesn't support .EnumerateRunes() so we have to limit the tests to commands that dont use it.
-    # $commands = Get-Command -Module StringUtils -Name Remove-Whitespace,Invoke-TrimCharClass
-    $commands = Get-Command -Module StringUtils -Name Remove-Whitespace
-
+    $commands = Get-Command -Module StringUtils -Name Remove-Whitespace,Invoke-TrimCharClass
 }
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $timearray = [System.Collections.Generic.List[psobject]]::new()
@@ -123,12 +156,12 @@ $r = foreach ($c in $commands) {
     $sampledata.keys | ForEach-Object {
         $curr = $sampledata[$_]
         $timerinput.restart()
-        $testin = & $c $($curr.Input)
+        1..$testruns | ForEach-Object { $testin = & $c $($curr.Input) }
         #this is just super duper stupid, but fun.
-        $runtimeinput = $timerinput.elapsed.nanoseconds
+        $runtimeinput = $timerinput.elapsed.TotalMilliseconds
         $timerpipeline.restart()
-        $testpipe = $Curr.Input | & $c
-        $runtimepipeline = $timerpipeline.elapsed.Nanoseconds
+        1..$testruns | ForEach-Object { $testpipe = $Curr.Input | & $c }
+        $runtimepipeline = $timerpipeline.Elapsed.TotalMilliseconds
         if ($curr.Expected -is [String]) {
             if ($curr.Expected -ceq $testin) {
                 $in = $t
@@ -166,7 +199,6 @@ $r = foreach ($c in $commands) {
             InputTest  = $in
             InputTime  = $runtimeinput
             PipeTime   = $runtimepipeline
-            # 'Speed (ns)' = "[Input:$($runtimeinput)] [Pipe:$($runtimepipeline)]"
             Input      = $curr.Input
             Expected   = $curr.Expected
             ResultIn   = $testin
@@ -174,8 +206,8 @@ $r = foreach ($c in $commands) {
         }
     }
     $timearray.add([PSCustomObject]@{
-            Command     = $c.Name
-            'Time (ms)' = $stopwatch.Elapsed.Milliseconds
+            Command = $c.Name
+            Time    = $stopwatch.Elapsed.TotalMilliseconds
         })
 }
 $good = $r | Where-Object { $_.PipeTest -eq $t -or $_.InputTest -eq $t }
@@ -185,7 +217,8 @@ $bad = $r | Where-Object { $_.PipeTest -eq $f -or $_.InputTest -eq $f }
 $r | Select-Object -ExcludeProperty Input*,ResultIn | Sort-Object -Property Test,Pipetime | Format-Table
 Write-Host `n
 $r | Select-Object -ExcludeProperty Pipe*,Input, ResultPipe | Sort-Object -Property Test,InputTime | Format-Table
-$timearray | Sort-Object -Property 'Time (ms)' | Format-Table
+$timearray | Sort-Object -Property Time | Format-Table
+Write-Host "TestIterations: $testruns"
 Write-Host "Tested $($commands.count) commands against $($r.count * 2) tests"
 Write-Host "Passed: $($good.count * 2)"
 Write-Host "Failed: $($bad.count * 2)"

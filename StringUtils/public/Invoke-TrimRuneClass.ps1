@@ -1,183 +1,94 @@
-﻿<#
-never really got the dotnet class working properly, so i just left it here for now.
-#>
-
-Function Invoke-TrimRuneClass {
+﻿Function Invoke-TrimRuneClass {
+    <#
+    This is probably the fastest way to trim a string in Powershell reliably.
+    and fairly easy to work with as well.
+    can pass a Excludecharacter
+    You can also just modify the dotnet class and add more categories.
+    [System.Enum]::GetValues([System.Globalization.UnicodeCategory])
+    #>
     [cmdletbinding()]
-    # [Alias('TrimPipeline')]
     param(
         [AllowNull()]
         [AllowEmptyString()]
         [parameter(Mandatory, ValueFromPipeline)]
         [String[]]
         $String,
-        [Switch]
-        $NoTrim,
-        [ValidateLength(1, 2)]
-        [string]
+        [String]
         $ExcludeCharacter = ' ' #'0x20' # space
     )
     begin {
-        throw 'broken rune class'
         if (-Not ('StringCleanerR' -as [type])) {
-            Add-StringCleanerRune
+            Add-StringCleanerRuneclass
         }
-        $keep = $ExcludeCharacter.EnumerateRunes().value -as [int]
     }
     process {
         foreach ($item in $String) {
             if ([String]::IsNullOrEmpty($item)) {
                 continue
             }
-            if ($NoTrim) {
-                [StringCleanerR]::Trim($item, $keep)
-            }
-            else {
-                # using .Trim() to cleanup the input string after whitespace removal, should be safe to use for leading/trailing whitespace without touching spaces.
-                [StringCleanerR]::Trim($item, $keep)
-            }
+            [StringCleanerR]::Trim($item, $ExcludeCharacter)
         }
     }
 }
-Function Add-StringCleanerRune {
-    <#
-    broken rune class
-    dotnet code from
-    https://stackoverflow.com/questions/6219454/efficient-way-to-remove-all-whitespace-from-string/37368176#37368176
-    https://en.wikipedia.org/wiki/Whitespace_character
-    https://www.compart.com/en/unicode/block/U+2400
-    #>
+
+function Add-StringCleanerRuneclass {
 
     if (-Not ('StringCleanerR' -as [type])) {
         $StringCleanerR = @'
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
-public static class StringCleanerR {
-    public static string Trim(string input, int keep) {
-        StringBuilder sb = new StringBuilder();
-        foreach (Rune rune in input.EnumerateRunes()) {
-            Console.WriteLine(rune.Tostring());
-            console.WriteLine(rune.Value);
-            if (rune.Value == keep) {
-                sb.Append(rune.ToString());
-                break;
-            } else {
-                switch (rune.Value) {
-                    case 0x20: // normal space
-                    case 0x09: // horizontal tab
-                    case 0x0A: // line feed
-                    case 0x0B: // vertical tab
-                    case 0x0C: // form feed
-                    case 0x0D: // carriage return
-                    case 0x85: // next line
-                    case 0xA0: // non-breaking space
-                    case 0x1680: // ogham space mark
-                    case 0x2000: // en quad
-                    case 0x2001: // em quad
-                    case 0x2002: // en space
-                    case 0x2003: // em space
-                    case 0x2004: // three-per-em space
-                    case 0x2005: // four-per-em space
-                    case 0x2006: // six-per-em space
-                    case 0x2007: // figure space
-                    case 0x2008: // punctuation space
-                    case 0x2009: // thin space
-                    case 0x200A: // hair space
-                    case 0x2028: // line separator
-                    case 0x2029: // paragraph separator
-                    case 0x202F: // narrow no-break space
-                    case 0x205F: // medium mathematical space
-                    case 0x3000: // ideographic space
-                        break; // skip this character
-                    default:
-                        sb.Append(rune.ToString());
-                        break;
-                }
+public class StringCleanerR {
+    public static string Trim(string str, string[] exclude) {
+        List<Rune> excludeRunes = new List<Rune>();
+        foreach (string excludeChar in exclude) {
+
+            // some characters are represented by multiple runes.
+
+            StringRuneEnumerator enumerator = excludeChar.EnumerateRunes();
+            enumerator.MoveNext();
+            Rune excludeRune = enumerator.Current;
+            excludeRunes.Add(excludeRune);
+            }
+
+        StringBuilder bufferSB = new StringBuilder();
+        foreach (Rune rune in str.EnumerateRunes()) {
+            if (excludeRunes.Contains(rune)) {
+                bufferSB.Append(rune.ToString());
+                continue;
+            }
+            UnicodeCategory category = Rune.GetUnicodeCategory(rune);
+            switch (category) {
+                case UnicodeCategory.Control:
+                case UnicodeCategory.SpaceSeparator:
+                case UnicodeCategory.LineSeparator:
+                case UnicodeCategory.ParagraphSeparator:
+                case UnicodeCategory.Surrogate:
+                case UnicodeCategory.OtherNotAssigned:
+                // Uncomment the following cases if needed for future tests/use
+                // full list of UnicodeCategories: https://docs.microsoft.com/en-us/dotnet/api/system.globalization.unicodecategory?view=net-5.0
+                // case UnicodeCategory.Format:
+                // case UnicodeCategory.PrivateUse:
+                // case UnicodeCategory.OtherSymbol:
+                // case UnicodeCategory.OtherPunctuation:
+                // case UnicodeCategory.OtherNumber:
+                // case UnicodeCategory.MathSymbol:
+                    continue;
+                default:
+                    bufferSB.Append(rune.ToString());
+                    break;
             }
         }
-        string result = sb.ToString();
-        sb.Clear();
-        return result.Trim();
+        string trimmedString = bufferSB.ToString().Trim();
+        return trimmedString;
     }
 }
 '@
         Add-Type -TypeDefinition $StringCleanerR -Language CSharp
     }
 }
-Function Old-StringCleanerRune {
-    <#
-    broken rune class
-    dotnet code from
-    https://stackoverflow.com/questions/6219454/efficient-way-to-remove-all-whitespace-from-string/37368176#37368176
-    https://en.wikipedia.org/wiki/Whitespace_character
-    https://www.compart.com/en/unicode/block/U+2400
-    #>
-
-    if (-Not ('StringCleanerR' -as [type])) {
-        $StringCleaner = @'
-using System;
-using System.Text;
-
-public static class StringCleanerR {
-    public static string Trim(string str, int keep) {
-        var sb = new StringBuilder();
-        foreach (Rune rune in str.EnumerateRunes()) {
-            if (rune.Value != keep) {
-                // string character = char.ConvertFromUtf32(rune.Value);
-                string character = rune.ToString();
-                sb.Append(character);
-                break;
-            }
-            switch (rune.Value) {
-                case 5760:
-                case 8192:
-                case 1680:
-                case 8194:
-                case 8195:
-                case 8196:
-                case 8197:
-                case 8198:
-                case 8199:
-                case 8200:
-                case 8201:
-                case 8202:
-                case 8239:
-                case 8287:
-                case 12288:
-                case 8232:
-                case 8233:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 8203:
-                case 65279:
-                case 8205:
-                case 8204:
-                case 8288:
-                case 6158:
-                case 6144:
-                case 6156:
-                case 6157:
-                    break;
-                default:
-                    //string character = char.ConvertFromUtf32(rune.Value);
-                    string character = rune.ToString();
-                    sb.Append(character);
-                    break;
-            }
-        }
-        string result = sb.ToString();
-        return result.Trim();
-    }
-}
-'@
-        Add-Type -TypeDefinition $StringCleaner -Language CSharp
-    }
-}
-
 <#
 \u0085 -> 5760  # Next Line (NEL)
 \u00A0 -> 8192  # No-Break Space (NBSP)
