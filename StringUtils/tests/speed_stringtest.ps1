@@ -156,7 +156,7 @@ $r = foreach ($c in $commands) {
     $sampledata.keys | ForEach-Object {
         $curr = $sampledata[$_]
         $timerinput.restart()
-        1..$testruns | ForEach-Object { $testin = & $c $($curr.Input) }
+        1..$testruns | ForEach-Object { $testin = & $c $curr.Input }
         #this is just super duper stupid, but fun.
         $runtimeinput = $timerinput.elapsed.TotalMilliseconds
         $timerpipeline.restart()
@@ -218,7 +218,7 @@ $r | Select-Object -ExcludeProperty Input*,ResultIn | Sort-Object -Property Test
 Write-Host `n
 $r | Select-Object -ExcludeProperty Pipe*,Input, ResultPipe | Sort-Object -Property Test,InputTime | Format-Table
 $timearray | Sort-Object -Property Time | Format-Table
-Write-Host "TestIterations: $testruns"
+Write-Host "Testruns: $testruns"
 Write-Host "Tested $($commands.count) commands against $($r.count * 2) tests"
 Write-Host "Passed: $($good.count * 2)"
 Write-Host "Failed: $($bad.count * 2)"
