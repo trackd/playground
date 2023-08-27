@@ -9,5 +9,6 @@ just a little experiment with runes and strings
 . $PSScriptRoot\Public\Invoke-TrimRuneClass.ps1
 . $PSScriptRoot\Public\Remove-Whitespace.ps1
 
-. $PSScriptRoot\Public\RuneInfo.ps1
-Export-ModuleMember -Function *
+. $PSScriptRoot\Public\Get-Char.ps1
+
+Export-ModuleMember -Function * -Alias *
