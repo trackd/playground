@@ -186,3 +186,71 @@ Describe "Invoke-TrimRuneClass" {
         }
     }
 }
+
+$properties = @(
+    'Character',
+    'Rune',
+    'Hex',
+    'UnicodeCategory',
+    'Control',
+    'Digit',
+    'Letter',
+    'LetterOrDigit',
+    'lower',
+    'Number',
+    'Punctuation',
+    'Separator',
+    'Symbol',
+    'Upper',
+    'WhiteSpace',
+    'UTF8',
+    'BigEndian',
+    'Unicode',
+    'CharCode'
+)
+
+Describe 'Get-Char' {
+    $characters = @(128512, 128516, 128525, 128536, 128563)
+    $randomCharacters = $characters | Get-Random -Count 3
+
+    foreach ($character in $randomCharacters) {
+        Context "when given character $character" {
+            It 'returns the correct character information' {
+                $result = Get-Char $character -Detailed
+                $randomProperties = $properties | Get-Random -Count 5
+                foreach ($property in $randomProperties) {
+                    $result.$property | Should -Not -BeNullOrEmpty
+                }
+            }
+        }
+    }
+}
+Describe 'Get-Char Invalid Input' {
+    Context 'when given an invalid input' {
+        It 'returns an error message' {
+            { $result = Get-Char 9999999 -ErrorAction SilentlyContinue } | Should -Throw
+            $result | Should -Be $null
+        }
+    }
+}
+
+Describe 'Get-Char reversal with emojis' {
+    Context 'enumate back and forth' {
+        It 'works' {
+            $runenumbers = @(128512, 128516, 128525, 128536, 128563)
+            $smileyChar = @('😀','😄','😍','😘','😳')
+            $RuneToChar = ($runenumbers | Get-Char).Character
+            $RuneToChar | Should -Be $smileyChar
+            $CharToRune = ($smileyChar | Get-Char).Rune
+            $CharToRune | Should -Be $runenumbers
+        }
+    }
+}
+Describe 'Get-Char test' {
+    Context 'simple text' {
+        It 'works' {
+            $runes = 'hello' | Get-Char
+            $runes.Rune | Should -Be @('104','101','108','108','111')
+            $runes.Character | Should -Be @('h','e','l','l','o') }
+    }
+}
