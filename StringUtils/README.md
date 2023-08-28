@@ -22,3 +22,24 @@ Seem to be control codes: backspace, escape, alert.
 Not sure why that happens..  
 
 The others require PS7 (because they rely on .EnumerateRunes())  
+
+```ps1
+.\tests\speed_stringtest.ps1
+Testruns: 500  
+Tested 6 commands against 264 tests  
+Passed: 264  
+Failed: 0  
+```
+
+|Command|Time|
+|-------|----|
+|Invoke-TrimCharClass|956,38|
+|Invoke-TrimRuneClass|996,66|
+|Remove-Whitespace|1099,92|
+|Invoke-TrimRunesRange|4107,05|
+|Invoke-TrimRunesWithCategories|6426,21|
+|Invoke-TrimRunes|7395,23|
+
+theres also a pester test in  
+.\tests\string.tests.ps1  
+but its not nearly as visually fun to look at  
