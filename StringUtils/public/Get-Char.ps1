@@ -69,32 +69,32 @@ function Get-CharInfo {
             catch {
                 throw $_
             }
-            $Character = $rune.ToString()
             $hex = [Convert]::ToString($rnum, 16)
             $Info = [ordered]@{
-                Character       = $Character
-                Rune            = $rnum
-                Hex             = "$([System.String]::Concat('`','u','{',$hex,'}'))"
+                Character       = $rune
+                Rune            = $rune.value
+                Hex             = [System.String]::Concat('`','u','{',$hex,'}')
                 UnicodeCategory = [Rune]::GetUnicodeCategory($rnum)
             }
-
             if ($Detailed) {
-                $Info.Control = [Rune]::IsControl($rnum)
-                $Info.Digit = [Rune]::IsDigit($rnum)
-                $Info.Letter = [Rune]::IsLetter($rnum)
-                $Info.LetterOrDigit = [Rune]::IsLetterOrDigit($rnum)
-                $Info.lower = [Rune]::Islower($rnum)
-                $Info.Number = [Rune]::IsNumber($rnum)
-                $Info.Punctuation = [Rune]::IsPunctuation($rnum)
-                $Info.Separator = [Rune]::IsSeparator($rnum)
-                $Info.Symbol = [Rune]::IsSymbol($rnum)
-                $Info.Upper = [Rune]::IsUpper($rnum)
-                $Info.WhiteSpace = [Rune]::IsWhiteSpace($rnum)
-                $Info.UTF8 = [Encoding]::UTF8.GetBytes($character) | Join-String -FormatString '{0:x2}' -Separator ' '
-                $Info.BigEndian = [Encoding]::BigEndianUnicode.GetBytes($character) | Join-String -FormatString '{0:x2}' -Separator ' '
-                $Info.Unicode = [Encoding]::Unicode.GetBytes($character) | Join-String -FormatString '{0:x2}' -Separator ' '
+                $Info.Control = [Rune]::IsControl($rune)
+                $Info.Digit = [Rune]::IsDigit($rune)
+                $Info.Letter = [Rune]::IsLetter($rune)
+                $Info.LetterOrDigit = [Rune]::IsLetterOrDigit($rune)
+                $Info.lower = [Rune]::Islower($rune)
+                $Info.Number = [Rune]::IsNumber($rune)
+                $Info.Punctuation = [Rune]::IsPunctuation($rune)
+                $Info.Separator = [Rune]::IsSeparator($rune)
+                $Info.Symbol = [Rune]::IsSymbol($rune)
+                $Info.Upper = [Rune]::IsUpper($rune)
+                $Info.WhiteSpace = [Rune]::IsWhiteSpace($rune)
+                # $Info.UTF8Bytes = [Encoding]::UTF8.GetBytes($rune) | Join-String -FormatString '{0:x2}' -Separator ' '
+                $Info.UTF8Bytes = [Encoding]::UTF8.GetBytes($rune) | Join-String -FormatString '0x{0:x2}' -Separator ' '
+                $Info.BigEndianBytes = [Encoding]::BigEndianUnicode.GetBytes($rune) | Join-String -FormatString '{0:x2}' -Separator ' '
+                $Info.UnicodeBytes = [Encoding]::Unicode.GetBytes($rune) | Join-String -FormatString '{0:x2}' -Separator ' '
+                $info.Unicode = 'U+' + $hex
                 switch ($Character.Length) {
-                    '1' { $Info.CharCode = '[char]0x{0:X4}' -f [Char]::ConvertToUtf32($character,0) }
+                    '1' { $Info.CharCode = '[char]0x{0:X4}' -f [Char]::ConvertToUtf32($rune.ToString(),0) }
                     '2' { $info.CharCode = 'Surrogate Pair' }
                     default { }
                 }
