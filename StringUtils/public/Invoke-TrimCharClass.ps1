@@ -56,9 +56,9 @@ public static class StringCleaner {
                 case '\u205F': case '\u3000': case '\u2028': case '\u2029': case '\u0009':
                 case '\u000A': case '\u000B': case '\u000C': case '\u000D': case '\u200B':
                 // added below from wikipedia page
-                case '\uFEFF': case '\u200D': case '\u200C': case '\u2060': case '\u180E':
+                // case '\uFEFF': case '\u200D': case '\u200C': case '\u2060': case '\u180E':
                 // from compart.com
-                case '\u2400': case '\u240c': case '\u240d':
+                // case '\u2400': case '\u240c': case '\u240d':
                     continue;
                 default:
                     src[dstIdx++] = ch;
