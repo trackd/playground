@@ -1,4 +1,4 @@
-﻿Import-Module PSParseHtml
+﻿#Import-Module PSParseHtml
 
 function Search-Google {
     <#
@@ -37,6 +37,8 @@ function Search-Google {
         [String]
         $Language = (Get-Culture).TwoLetterISOLanguageName
     )
+    # just to avoid conflicting with PowerHTML which has a function with the same name. but differ on param -URI vs -URL.
+    if (-Not (Get-Module PSParseHTML)) { Import-Module PSParseHTML }
     # sometimes you get sent to a google help page about search language unless you specify the language.
     $urlbuilder = "https://www.google.com/search?&q=" + [System.Web.HttpUtility]::UrlEncode($Query) + "&hl=$language"
     # seems specifying lang. doesnt always fix it... below also show up for some queries.
