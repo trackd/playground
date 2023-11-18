@@ -34,7 +34,7 @@ function Get-Rune {
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
-        [Parameter(Mandatory, ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [Parameter(ValueFromPipeline)]
         $InputObject,
         [Parameter(ValueFromPipelineByPropertyName)]
         [String[]]
@@ -50,16 +50,20 @@ function Get-Rune {
         $Detailed
     )
     begin {
-        Write-Debug "Module: $($ExecutionContext.SessionState.Module.Name) Command: $($MyInvocation.MyCommand.Name) ParameterSetName: $($PSCmdlet.ParameterSetName) Param: $($PSBoundParameters.GetEnumerator())"
+        Write-Debug "Begin: Command: $($MyInvocation.MyCommand.Name) ParameterSetName: $($PSCmdlet.ParameterSetName) Param: $($PSBoundParameters.GetEnumerator())"
         $list = [System.Collections.Generic.List[int]]::new()
         $regexU = [regex]::escape('^`u{([0-9A-Fa-f]{4,6})}$')
     }
     process {
-        $InputObject = switch ($true) {
-            { $Rune } { $Rune; break }
-            { $Hex } { $Hex; break }
-            { $Character } { $Character; break }
-            default { $InputObject }
+        Write-Debug "Params process: $($PSBoundParameters.GetEnumerator())"
+        if ($PSBoundParameters.ContainsKey('Rune') -or $PSBoundParameters.ContainsKey('Hex') -or $PSBoundParameters.ContainsKey('Character')) {
+            # ugly hack to map pscustomobject properties if you pipe Get-Rune | Get-Rune.
+            $InputObject = switch ($true) {
+                { $Rune } { $Rune; break }
+                { $Hex } { $Hex; break }
+                { $Character } { $Character; break }
+                default { $InputObject }
+            }
         }
         foreach ($item in $InputObject) {
             if ([String]::IsNullOrEmpty($item)) {

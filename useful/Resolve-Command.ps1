@@ -23,7 +23,7 @@
     [CmdletBinding()]
     [Alias('which')]
     param(
-        [Parameter(Position = 0)]
+        [Parameter()]
         [String]
         $Name,
         [Parameter(ValueFromPipeline)]
@@ -35,7 +35,7 @@
     }
     elseif ($Name) {
         #get CommandInfo object if it's a name
-        $results = Get-Command $name -ErrorAction 'Stop'
+        $results = Get-Command $name -EA Ignore
     }
     if ($results) {
         #if we find results
@@ -44,8 +44,8 @@
             #if it's an alias, continue down the rabbit hole til we get something else.
             $results = Get-Command $results.definition -ErrorAction 'Stop'
         }
-        if ($results.CommandType -eq 'Function') {
-            if (Get-Command -Name Format-Powershell) {
+        if ($results.CommandType -in @('Function','Filter')) {
+            if (Get-Command -Name Format-Powershell -EA Ignore) {
                 # Format-Powershell is from https://github.com/SeeminglyScience/dotfiles/blob/main/Documents/PowerShell/Utility.psm1
                 # relies on bat.
                 @(
@@ -57,39 +57,33 @@
                 ) | Format-Powershell
             }
             else {
-                $pref = $InformationPreference
-                $InformationPreference = 'Continue'
-                Write-Information "File: $($results.ScriptBlock.file)"
-                Write-Information "Parameters: $($results.ParameterSets)"
+                Write-Information "File: $($results.ScriptBlock.file)" -InformationAction Continue
+                Write-Information "Parameters: $($results.ParameterSets)" -InformationAction Continue
                 $results.ScriptBlock.ast.extent.text
-                $InformationPreference = $pref
             }
         }
         elseif ($results.CommandType -eq 'Cmdlet') {
-            if (Get-Command -Name Expand-MemberInfo) {
+            if (Get-Command -Name Expand-MemberInfo -EA Ignore) {
                 # Expand-MemberInfo and Format-CSharp are from https://github.com/SeeminglyScience/dotfiles/blob/main/Documents/PowerShell/Utility.psm1
                 # they also rely on dnspy.console & bat.
                 $results.ImplementingType | Expand-MemberInfo | Format-CSharp
             }
             else {
                 #if it's a cmdlet try something but recommend ilspy for dll.
-                $pref = $InformationPreference
-                $InformationPreference = 'Continue'
+
                 Write-Warning 'This command is a cmdlet, you need ilspy/dnspy or something similar to decompile the code, output is a proxyfunction'
-                Write-Information "File: $($results.DLL)`n"
-                Write-Information "Parameters: $($results.ParameterSets)`n"
+                Write-Information "File: $($results.DLL)`n" -InformationAction Continue
+                Write-Information "Parameters: $($results.ParameterSets)`n" -InformationAction Continue
                 Write-Output "function $($results.Name) {"
                 $MetaData = [System.Management.Automation.CommandMetaData]::new($results)
                 [System.Management.Automation.ProxyCommand]::Create($MetaData)
                 Write-Output '}'
-                $InformationPreference = $pref
             }
         }
         else {
-            #else just output all, like for applications.
+            #else just output some info
             $results | Select-Object Name, Source, Path, CommandType, Extension, FileVersionInfo
         }
     }
     else { Write-Error "command not found: $($name)" }
-    Remove-Variable results -Force -ErrorAction SilentlyContinue
 }

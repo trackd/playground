@@ -27,9 +27,9 @@ function Search-Google {
         [Parameter(Mandatory)]
         [String]
         $Query,
-        [ValidateRange(0, 10)]
-        [int]
+        [ValidateRange(1, 10)]
         [Alias('Results')]
+        [int]
         $MaxResults = 1,
         [Switch]
         $Open,
@@ -43,20 +43,21 @@ function Search-Google {
     $urlbuilder = "https://www.google.com/search?&q=" + [System.Web.HttpUtility]::UrlEncode($Query) + "&hl=$language"
     # seems specifying lang. doesnt always fix it... below also show up for some queries.
     $filter = @(
-        [regex]::Escape('https://support.google.com/websearch/?p=language_search_results')
-        [regex]::Escape('https://accounts.google.com/ServiceLogin')
-        [regex]::Escape('https://policies.google.com/technologies/cookies')
+        [regex]::Escape('https://support.google.com/')
+        [regex]::Escape('https://accounts.google.com/')
+        [regex]::Escape('https://policies.google.com/')
     ) -join '|'
     $response = ConvertFrom-Html -URI $urlbuilder -Engine AgilityPack
     $hrefs = $response.SelectNodes('//a')
     Write-Debug $hrefs.count
     $i = 0
-    $searchresults = while ($i -lt $hrefs.Count -and $MaxResults -gt 0) {
-        Write-Debug "iteration: $i need: $MaxResults"
+    $Count = $MaxResults # to avoid the ValidateRange stuff on $MaxResults.
+    $searchresults = while ($i -lt $hrefs.Count -and $Count -gt 0) {
+        Write-Debug "iteration: $i need: $Count"
         [uri]$url = $hrefs[$i].Attributes["href"].Value
         if ($url.IsAbsoluteUri -and $url.AbsoluteUri -notmatch $filter) {
             $url.AbsoluteUri
-            $MaxResults--
+            $Count--
         }
         $i++
     }
