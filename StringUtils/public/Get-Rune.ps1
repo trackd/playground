@@ -1,4 +1,5 @@
-﻿function Get-Rune {
+﻿using namespace System.Text
+function Get-Rune {
     <#
     tries to convert a string to a rune, and returns information about the rune.
     also accepts a rune, and returns information about the rune.
