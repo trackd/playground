@@ -24,14 +24,6 @@ function Edit-VSCode {
         [System.Management.Automation.CommandInfo]$InputObject,
         [Switch]$Stable
     )
-    # vs code version, defaults to insiders.
-    if ($Stable) {
-        $code = Get-Command code -ErrorAction Stop
-    }
-    else {
-        $code = Get-Command code-insiders -ErrorAction Stop
-    }
-
     # command lookup
     if ($Command) {
         $lookup = $ExecutionContext.InvokeCommand.GetCommand($Command,'All')
@@ -40,6 +32,14 @@ function Edit-VSCode {
     if ($null -eq $lookup -or $lookup.CommandType -eq 'Cmdlet') { return 'Action not supported' }
     if ($lookup.ResolvedCommand) {
         $lookup = $lookup.ResolvedCommand
+    }
+
+    # vs code version, defaults to insiders.
+    if ($Stable) {
+        $code = Get-Command code -ErrorAction Stop
+    }
+    else {
+        $code = Get-Command code-insiders -ErrorAction Stop
     }
 
     # builder
