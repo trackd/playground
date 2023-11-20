@@ -30,6 +30,9 @@
         [System.Management.Automation.CommandInfo]
         $Object
     )
+    $info = @{
+        InformationAction = 'Continue'
+    }
     if ($object) {
         $results = $object | Select-Object -First 1
     }
@@ -57,8 +60,8 @@
                 ) | Format-Powershell
             }
             else {
-                Write-Information "File: $($results.ScriptBlock.file)" -InformationAction Continue
-                Write-Information "Parameters: $($results.ParameterSets)" -InformationAction Continue
+                Write-Information "File: $($results.ScriptBlock.file)" @info
+                Write-Information "Parameters: $($results.ParameterSets)" @info
                 $results.ScriptBlock.ast.extent.text
             }
         }
@@ -68,12 +71,28 @@
                 # they also rely on dnspy.console & bat.
                 $results.ImplementingType | Expand-MemberInfo | Format-CSharp
             }
+            elseif (($ilspy = Get-Command -Name ilspycmd) -And ($bat = Get-Command -Name bat)) {
+                # less dependencies, needs ilspy and bat.
+                #     dotnet tool install ilspycmd -g
+                #     winget install --id sharkdp.bat
+                $ilspyarg = @(
+                    '--type'
+                    $results.ImplementingType
+                    $results.DLL
+                )
+                $batargs = @(
+                    '-l'
+                    'cs'
+                    '--style'
+                    'grid,numbers,snip'
+                )
+                & $ilspy $ilspyarg | & $bat $batargs
+            }
             else {
                 #if it's a cmdlet try something but recommend ilspy for dll.
-
                 Write-Warning 'This command is a cmdlet, you need ilspy/dnspy or something similar to decompile the code, output is a proxyfunction'
-                Write-Information "File: $($results.DLL)`n" -InformationAction Continue
-                Write-Information "Parameters: $($results.ParameterSets)`n" -InformationAction Continue
+                Write-Information "File: $($results.DLL)`n" @info
+                Write-Information "Parameters: $($results.ParameterSets)`n" @info
                 Write-Output "function $($results.Name) {"
                 $MetaData = [System.Management.Automation.CommandMetaData]::new($results)
                 [System.Management.Automation.ProxyCommand]::Create($MetaData)
