@@ -1,6 +1,4 @@
-﻿using namespace System.Text
-
-function Get-Rune {
+﻿function Get-Rune {
     <#
     tries to convert a string to a rune, and returns information about the rune.
     also accepts a rune, and returns information about the rune.
@@ -29,7 +27,7 @@ function Get-Rune {
 
     #>
     [CmdletBinding()]
-    [Alias('Get-Char','Char','Rune')]
+    [Alias('Get-Char', 'Char', 'Rune')]
     param (
         [AllowNull()]
         [AllowEmptyString()]
@@ -52,17 +50,29 @@ function Get-Rune {
     begin {
         Write-Debug "Begin: Command: $($MyInvocation.MyCommand.Name) ParameterSetName: $($PSCmdlet.ParameterSetName) Param: $($PSBoundParameters.GetEnumerator())"
         $list = [System.Collections.Generic.List[int]]::new()
-        $regexU = [regex]::escape('^`u{([0-9A-Fa-f]{4,6})}$')
     }
     process {
         Write-Debug "Params process: $($PSBoundParameters.GetEnumerator())"
         if ($PSBoundParameters.ContainsKey('Rune') -or $PSBoundParameters.ContainsKey('Hex') -or $PSBoundParameters.ContainsKey('Character')) {
-            # ugly hack to map pscustomobject properties if you pipe Get-Rune | Get-Rune.
             $InputObject = switch ($true) {
-                { $Rune } { $Rune; break }
-                { $Hex } { $Hex; break }
-                { $Character } { $Character; break }
-                default { $InputObject }
+                { $Rune } {
+                    Write-Debug 'Parameterbinding Rune'
+                    $Rune
+                    break
+                }
+                { $Hex } {
+                    Write-Debug 'Parameterbinding Hex'
+                    $Hex
+                    break
+                }
+                { $Character } {
+                    Write-Debug 'Parameterbinding Character'
+                    $Character
+                    break
+                }
+                default {
+                    throw 'Parameterbinding failed'
+                }
             }
         }
         foreach ($item in $InputObject) {
@@ -70,7 +80,7 @@ function Get-Rune {
                 # skip empty entries.
                 continue
             }
-            if ($InputObject -match '^U\+([0-9A-Fa-f]{4,6})$|\^`u\{\(\[0-9A-Fa-f]\{4,6}\)}\$') {
+            if ($InputObject -match '^U\+([0-9A-Fa-f]{4,6})$|^`u\{\(\[0-9A-Fa-f]\{4,6}\)}$') {
                 # U+.... or `u{....} unicode format
                 Write-Debug "hex: $item"
                 $list.add([Convert]::ToInt32($matches[1], 16))
@@ -117,7 +127,7 @@ function Get-Rune {
             $Info = [ordered]@{
                 Character       = $StringChar
                 Rune            = $runeobj.value
-                Hex             = [String]::Concat('`','u','{',$hex,'}')
+                Hex             = [String]::Concat('`', 'u', '{', $hex, '}')
                 UnicodeCategory = $Category
             }
             if ($Detailed) {
@@ -131,7 +141,7 @@ function Get-Rune {
                 $Info.Separator = [Rune]::IsSeparator($runeobj)
                 $Info.Symbol = [Rune]::IsSymbol($runeobj)
                 $Info.Upper = [Rune]::IsUpper($runeobj)
-                $Info.WhiteSpace = [Rune]::IsWhiteSpace($ruruneobjne)
+                $Info.WhiteSpace = [Rune]::IsWhiteSpace($runeobj)
                 $Info.UTF8Bytes = [Encoding]::UTF8.GetBytes($runeobj) | Join-String -FormatString '{0:x2}' -Separator ' '
                 $Info.BigEndianBytes = [Encoding]::BigEndianUnicode.GetBytes($runeobj) | Join-String -FormatString '{0:x2}' -Separator ' '
                 $Info.UnicodeBytes = [Encoding]::Unicode.GetBytes($runeobj) | Join-String -FormatString '{0:x2}' -Separator ' '
@@ -139,7 +149,7 @@ function Get-Rune {
                 $info.Unicode = 'U+' + [Convert]::ToString($rnum, 16)
                 # CharUnicodeInfo = [System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($rune)
                 switch ($StringChar.Length) {
-                    '1' { $Info.CharCode = '[char]0x{0:X4}' -f [Char]::ConvertToUtf32($runeobj.ToString(),0) }
+                    '1' { $Info.CharCode = '[char]0x{0:X4}' -f [Char]::ConvertToUtf32($runeobj.ToString(), 0) }
                     '2' { $info.CharCode = 'Surrogate Pair' }
                     default { }
                 }
