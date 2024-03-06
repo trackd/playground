@@ -22,7 +22,7 @@
     [CmdletBinding()]
     param(
         [ValidateSet('Insiders', 'Stable')]
-        [String]$Edition,
+        [String]$Edition = 'Insiders',
         [int]$FolderCount = 10,
         [String]$Pattern = 'Error|Exception',
         [int]$Context = 1,
@@ -42,8 +42,8 @@
     foreach ($folder in $logfolders) {
         $logfiles = Get-ChildItem $folder.Fullname -Filter *.log
         foreach ($log in $logfiles) {
-            if (-Not $Raw) {
-                Select-String -Path $log.FullName -Pattern $Pattern -Context $Context | ForEach-Object {
+            Select-String -Path $log.FullName -Pattern $Pattern -Context $Context | ForEach-Object {
+                if (-Not $Raw) {
                     [PSCustomObject]@{
                         Date        = $log.LastWriteTime
                         PreContext  = $_.context.PreContext -replace $sanitizeappdata, '~\AppData\Roaming' -replace $username, '~'
@@ -54,9 +54,9 @@
                         Folder      = $folder.Name
                     }
                 }
-            }
-            else {
-                Select-String -Path $log.FullName -Pattern $Pattern -Context $Context
+                else {
+                    $_
+                }
             }
         }
     }

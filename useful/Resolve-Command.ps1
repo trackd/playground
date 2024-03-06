@@ -23,21 +23,18 @@
     [CmdletBinding()]
     [Alias('which')]
     param(
-        [Parameter()]
-        [String]
-        $Name,
-        [Parameter(ValueFromPipeline)]
-        [System.Management.Automation.CommandInfo]
-        $Object
+        [Parameter(ValueFromPipeline, ParameterSetName ='Name', Mandatory)]
+        [String] $Name,
+        [Parameter(ValueFromPipelineByPropertyName,ParameterSetName ='CommandInfo', Mandatory)]
+        [System.Management.Automation.CommandInfo] $ResolvedCommand
     )
     $info = @{
         InformationAction = 'Continue'
     }
-    if ($object) {
-        $results = $object | Select-Object -First 1
+    if ($ResolvedCommand) {
+        $results = $ResolvedCommand | Select-Object -First 1
     }
-    elseif ($Name) {
-        #get CommandInfo object if it's a name
+    else {
         $results = Get-Command $name -EA Ignore
     }
     if ($results) {
